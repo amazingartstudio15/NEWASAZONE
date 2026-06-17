@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NewasaZone — न्यूासा झोन</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+  --g:#16a34a;--gd:#14532d;--gl:#dcfce7;--gm:#bbf7d0;
+  --am:#f59e0b;--al:#fef3c7;--rd:#dc2626;--rl:#fee2e2;
+  --bl:#2563eb;--bll:#dbeafe;--pu:#7c3aed;--pl:#ede9fe;
+  --bg:#f0fdf4;--sf:#fff;--sf2:#f8fafc;--br:#e2e8f0;
+  --tx:#0f172a;--t2:#475569;--t3:#94a3b8;
+  --r:14px;--rs:8px;--rl2:20px;
+  --sh:0 2px 8px rgba(0,0,0,.08);--shm:0 4px 24px rgba(0,0,0,.13);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Baloo 2',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+/* NAV */
+.nav{background:var(--sf);border-bottom:1px solid var(--br);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:200;box-shadow:var(--sh)}
+.logo{font-size:19px;font-weight:800;color:var(--tx)}.logo span{color:var(--g)}
+.ntabs{display:flex;gap:2px;overflow-x:auto}
+.tb{padding:5px 11px;border-radius:20px;border:1.5px solid transparent;font-family:'Baloo 2',sans-serif;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--t2);white-space:nowrap;transition:all .2s}
+.tb.active{background:var(--g);color:#fff;border-color:var(--g)}
+.tb:hover:not(.active){background:var(--gl);color:var(--gd)}
+.ldot{width:7px;height:7px;background:#22c55e;border-radius:50%;animation:pulse 1.2s infinite;display:inline-block}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* SCREENS */
+.sc{display:none}.sc.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.sc.on{animation:fi .22s ease}
+/* COMMON */
+.pg{padding:20px}
+.ptitle{font-size:21px;font-weight:800;margin-bottom:3px}
+.psub{font-size:13px;color:var(--t2);margin-bottom:18px}
+.card{background:var(--sf);border-radius:var(--r);border:1px solid var(--br);overflow:hidden}
+.ch{padding:13px 16px;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;align-items:center}
+.ct{font-size:14px;font-weight:700}
+.cb{padding:14px 16px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.sb{background:var(--sf);border-radius:var(--r);border:1px solid var(--br);padding:14px}
+.si{font-size:26px;margin-bottom:7px}
+.sv{font-size:22px;font-weight:800;line-height:1}
+.sl{font-size:12px;color:var(--t3);margin-top:3px}
+.bdg{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.bg{background:var(--gl);color:#166534}.ba{background:var(--al);color:#92400e}
+.br2{background:var(--rl);color:#991b1b}.bb{background:var(--bll);color:#1e40af}
+.bp{background:var(--pl);color:#5b21b6}.bgr{background:#f1f5f9;color:#64748b}
+.btn{padding:8px 18px;border-radius:var(--rs);border:none;font-family:'Baloo 2',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:5px}
+.btp{background:var(--g);color:#fff}.btp:hover{background:#15803d}
+.btb{background:var(--bl);color:#fff}
+.bta{background:var(--am);color:#fff}
+.bto{background:transparent;border:1.5px solid var(--br);color:var(--t2)}.bto:hover{background:var(--sf2)}
+.btd{background:var(--rd);color:#fff}
+.bts{padding:4px 11px;font-size:12px}
+.inp{width:100%;padding:9px 12px;border:1.5px solid var(--br);border-radius:var(--rs);font-family:'Baloo 2',sans-serif;font-size:13px;color:var(--tx);background:var(--sf);transition:border-color .2s}
+.inp:focus{outline:none;border-color:var(--g)}
+.sel{width:100%;padding:9px 12px;border:1.5px solid var(--br);border-radius:var(--rs);font-family:'Baloo 2',sans-serif;font-size:13px;color:var(--tx);background:var(--sf)}
+.lbl{display:block;font-size:12px;font-weight:700;color:var(--t2);margin-bottom:4px}
+.fr{margin-bottom:12px}
+.sw{width:40px;height:22px;appearance:none;background:var(--br);border-radius:11px;cursor:pointer;position:relative;transition:.2s;flex-shrink:0}
+.sw:checked{background:var(--g)}
+.sw::after{content:'';width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:.2s}
+.sw:checked::after{left:20px}
+.dvd{height:1px;background:var(--br);margin:11px 0}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:9px 12px;background:var(--sf2);color:var(--t3);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--br)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--br);color:var(--tx);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#fafafa}
+.drow{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--br)}
+.drow:last-child{border-bottom:none}
+.prg{height:5px;background:var(--br);border-radius:3px;overflow:hidden;margin:5px 0}
+.pf{height:100%;background:var(--g);border-radius:3px;transition:width .4s}
+.ntf{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:var(--rs);font-size:13px;font-weight:600;z-index:9999;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;max-width:300px;box-shadow:var(--shm)}
+.ntf.show{opacity:1;transform:translateY(0)}
+.ntf-ok{background:#166534;color:#fff}.ntf-err{background:var(--rd);color:#fff}.ntf-info{background:var(--tx);color:#fff}
+.spin{width:18px;height:18px;border:2px solid var(--br);border-top:2px solid var(--g);border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}
+.mb{background:var(--sf);border-radius:var(--rl2);padding:24px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shm)}
+.mttl{font-size:17px;font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.xcl{background:none;border:none;font-size:19px;cursor:pointer;color:var(--t3);padding:3px}
+/* SETUP */
+.sws{min-height:100vh;background:linear-gradient(135deg,#166534,#15803d 50%,#0d9488);display:flex;align-items:center;justify-content:center;padding:16px}
+.swc{background:#fff;border-radius:var(--rl2);padding:32px;max-width:540px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.swl{font-size:28px;font-weight:800;color:var(--g);text-align:center;margin-bottom:4px}
+.swsub{font-size:13px;color:var(--t2);text-align:center;margin-bottom:22px}
+.step{display:none}.step.on{display:block}
+.sdots{display:flex;gap:5px;justify-content:center;margin-bottom:20px}
+.sd{width:8px;height:8px;border-radius:50%;background:var(--br);transition:.3s}
+.sd.on{background:var(--g);width:22px;border-radius:4px}
+.stitle{font-size:17px;font-weight:800;margin-bottom:5px}
+.sdesc{font-size:13px;color:var(--t2);margin-bottom:16px;line-height:1.5}
+.ckey{font-family:monospace;font-size:11px;background:#1e293b;color:#86efac;padding:5px 9px;border-radius:5px;margin-top:5px;display:block;word-break:break-all}
+/* AUTH */
+.aw{min-height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}
+.ac{background:var(--sf);border-radius:var(--rl2);padding:28px;max-width:380px;width:100%;box-shadow:var(--shm);border:1px solid var(--br)}
+.al{font-size:24px;font-weight:800;color:var(--g);text-align:center;margin-bottom:3px}
+.as2{font-size:13px;color:var(--t2);text-align:center;margin-bottom:20px}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.rl{border:2px solid var(--br);border-radius:var(--rs);padding:12px;text-align:center;cursor:pointer;transition:all .2s}
+.rl:hover,.rl.sel{border-color:var(--g);background:var(--gl)}
+.ri{font-size:26px;margin-bottom:4px}
+.rn{font-size:13px;font-weight:700}
+.oi{display:flex;gap:7px;justify-content:center;margin:11px 0}
+.oinp{width:44px;height:50px;text-align:center;font-size:20px;font-weight:700;border:2px solid var(--br);border-radius:var(--rs);font-family:'Baloo 2',sans-serif;transition:border-color .2s}
+.oinp:focus{outline:none;border-color:var(--g)}
+/* CUSTOMER */
+.ch2{background:linear-gradient(135deg,var(--g),#0d9488);color:#fff;padding:18px}
+.cgr{font-size:13px;opacity:.8}
+.cnm{font-size:19px;font-weight:800}
+.cloc{font-size:12px;opacity:.75;margin-top:2px;display:flex;align-items:center;gap:3px}
+.sb2{background:rgba(255,255,255,.18);border-radius:23px;padding:10px 14px;display:flex;align-items:center;gap:7px;margin-top:12px;backdrop-filter:blur(4px)}
+.sb2 input{background:transparent;border:none;outline:none;color:#fff;font-family:'Baloo 2',sans-serif;font-size:13px;width:100%}
+.sb2 input::placeholder{color:rgba(255,255,255,.7)}
+.osc{display:flex;gap:10px;overflow-x:auto;padding:14px 14px 6px;scrollbar-width:none}
+.osc::-webkit-scrollbar{display:none}
+.ocard{min-width:220px;background:linear-gradient(135deg,#166534,#0d9488);border-radius:var(--r);padding:14px;color:#fff;flex-shrink:0}
+.otitle{font-size:14px;font-weight:800;margin-bottom:3px}
+.osub{font-size:11px;opacity:.85}
+.ocode{background:rgba(255,255,255,.2);border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700;margin-top:7px;display:inline-block}
+.csc{display:flex;gap:9px;overflow-x:auto;padding:0 14px;scrollbar-width:none}
+.csc::-webkit-scrollbar{display:none}
+.cpill{min-width:68px;background:var(--sf);border-radius:var(--r);border:1px solid var(--br);padding:11px 7px;text-align:center;cursor:pointer;transition:all .2s;flex-shrink:0}
+.cpill:hover,.cpill.on{border-color:var(--g);background:var(--gl)}
+.cpii{font-size:21px;display:block;margin-bottom:3px}
+.cpn{font-size:10px;font-weight:700;color:var(--t2)}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 14px}
+.scard{background:var(--sf);border-radius:var(--r);border:1px solid var(--br);overflow:hidden;cursor:pointer;transition:all .2s}
+.scard:hover{box-shadow:var(--shm);transform:translateY(-2px)}
+.sthumb{height:76px;display:flex;align-items:center;justify-content:center;font-size:34px;background:linear-gradient(135deg,var(--gl),var(--bll))}
+.sinf{padding:9px}
+.snm{font-size:13px;font-weight:700}
+.smeta{font-size:11px;color:var(--t3);margin-top:1px}
+.seta{font-size:11px;font-weight:700;color:var(--g);background:var(--gl);padding:2px 7px;border-radius:10px;display:inline-block;margin-top:3px}
+.sclosed{background:var(--rl);color:var(--rd)}
+.shd{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 7px}
+.stl{font-size:15px;font-weight:800}
+.sall{font-size:12px;color:var(--g);font-weight:700;cursor:pointer}
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--sf);border-top:1px solid var(--br);display:flex;justify-content:space-around;padding:7px 0 10px;z-index:100;box-shadow:0 -2px 12px rgba(0,0,0,.06)}
+.bni{text-align:center;cursor:pointer;padding:3px 10px;border-radius:var(--rs);transition:all .2s;position:relative}
+.bni.on{color:var(--g)}
+.bic{font-size:21px;display:block}
+.bil{font-size:10px;font-weight:700;color:var(--t3)}
+.bni.on .bil{color:var(--g)}
+.cba{position:absolute;top:0;right:4px;background:var(--rd);color:#fff;font-size:10px;font-weight:800;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.cv{padding-bottom:76px}
+/* PRODUCTS */
+.plist{padding:0 14px 14px}
+.pit{display:flex;align-items:center;gap:11px;padding:11px;background:var(--sf);border-radius:var(--r);border:1px solid var(--br);margin-bottom:7px}
+.pem{font-size:30px;width:50px;height:50px;background:var(--sf2);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pinf{flex:1}
+.pnm{font-size:13px;font-weight:700}
+.pdsc{font-size:11px;color:var(--t3);margin-top:1px}
+.ppr{font-size:15px;font-weight:800;color:var(--g);margin-top:2px}
+.qc{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.qb{width:27px;height:27px;border-radius:50%;border:1.5px solid var(--g);background:transparent;color:var(--g);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.qb:hover{background:var(--g);color:#fff}
+.qn{font-size:14px;font-weight:800;min-width:18px;text-align:center}
+.acb{background:var(--g);color:#fff;border:none;border-radius:var(--rs);padding:5px 13px;font-family:'Baloo 2',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
+/* CART */
+.cit{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--br)}
+.cem{font-size:26px}
+.cii{flex:1}
+.cin{font-size:13px;font-weight:700}
+.cst{font-size:11px;color:var(--t3)}
+.ctr{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--br)}
+.ctr.gd{font-weight:800;font-size:15px;border-bottom:none;padding-top:11px}
+.ckbar{position:fixed;bottom:68px;left:0;right:0;padding:11px 14px;background:var(--sf);border-top:1px solid var(--br);z-index:99}
+.ckbtn{background:var(--g);color:#fff;border:none;border-radius:var(--rs);padding:13px;font-family:'Baloo 2',sans-serif;font-size:14px;font-weight:800;cursor:pointer;width:100%;display:flex;justify-content:space-between;align-items:center}
+/* TRACKING */
+.tst{display:flex;flex-direction:column;gap:0;position:relative;padding:7px 0}
+.tl{position:absolute;left:14px;top:18px;bottom:18px;width:2px;background:var(--br);z-index:0}
+.tlf{position:absolute;left:14px;top:18px;width:2px;background:var(--g);z-index:1;transition:height .5s}
+.ts{display:flex;align-items:flex-start;gap:13px;padding:11px 0;position:relative;z-index:2}
+.tc{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;border:2px solid var(--br);background:var(--sf)}
+.ts.dn .tc{background:var(--g);border-color:var(--g);color:#fff}
+.ts.cur .tc{background:var(--am);border-color:var(--am);color:#fff;animation:pulse 1s infinite}
+.ti{padding-top:3px}
+.ttl2{font-size:13px;font-weight:700}
+.ttm{font-size:11px;color:var(--t3);margin-top:1px}
+.mpc{width:100%;height:200px;border-radius:var(--r);overflow:hidden;border:1px solid var(--br)}
+/* MERCHANT SIDEBAR */
+.mly{display:grid;grid-template-columns:210px 1fr;min-height:calc(100vh - 56px)}
+.msb{background:#0f172a;display:flex;flex-direction:column}
+.mslg{padding:16px;border-bottom:1px solid rgba(255,255,255,.07)}
+.msln{color:#fff;font-size:14px;font-weight:800}
+.mslst{font-size:11px;color:#4ade80;margin-top:1px}
+.msn{flex:1;padding:7px 0}
+.mn{display:flex;align-items:center;gap:9px;padding:10px 14px;color:rgba(255,255,255,.55);font-size:13px;font-weight:600;cursor:pointer;transition:.2s;border-left:3px solid transparent}
+.mn:hover{background:rgba(255,255,255,.06);color:#fff}
+.mn.on{background:rgba(255,255,255,.08);color:#fff;border-left-color:var(--g)}
+.mni{font-size:17px}
+.msft{padding:13px 14px;border-top:1px solid rgba(255,255,255,.07)}
+.mm{background:var(--bg);overflow-y:auto}
+.iord{background:var(--sf);border:2px solid var(--am);border-radius:var(--r);padding:14px;margin-bottom:11px}
+@keyframes si{from{transform:translateX(-8px);opacity:0}to{transform:translateX(0);opacity:1}}
+.iord{animation:si .3s ease}
+.iodt{font-size:14px;font-weight:800;margin-bottom:3px;display:flex;justify-content:space-between}
+.iodi{font-size:12px;color:var(--t2);margin-bottom:9px;line-height:1.6}
+.oac{display:flex;gap:7px}
+/* RIDER */
+.rly{display:grid;grid-template-columns:250px 1fr;min-height:calc(100vh - 56px)}
+.rsb{background:#1e293b;padding:18px 14px;display:flex;flex-direction:column;gap:13px}
+.rpr{text-align:center;padding-bottom:13px;border-bottom:1px solid rgba(255,255,255,.1)}
+.rav{width:60px;height:60px;border-radius:50%;background:var(--g);margin:0 auto 7px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.rnm{color:#fff;font-size:14px;font-weight:800}
+.rrt{color:rgba(255,255,255,.6);font-size:12px;margin-top:1px}
+.rot{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.06);border-radius:var(--rs);padding:11px}
+.rol{color:#fff;font-size:13px;font-weight:700}
+.reg{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.reb{background:rgba(255,255,255,.06);border-radius:var(--rs);padding:11px;text-align:center}
+.rev{font-size:17px;font-weight:800;color:#fff}
+.rel{font-size:10px;color:rgba(255,255,255,.5);margin-top:1px}
+.rm{background:var(--bg);padding:20px;overflow-y:auto}
+.dc{background:var(--sf);border-radius:var(--r);border:1px solid var(--br);padding:14px;margin-bottom:11px}
+.dch{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.did{font-size:14px;font-weight:800}
+.dern{font-size:17px;font-weight:800;color:var(--g)}
+.dr{display:flex;flex-direction:column;gap:7px;margin-bottom:11px}
+.dri{display:flex;align-items:center;gap:9px;font-size:13px}
+.dric{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.drip{background:var(--al)}.drido{background:var(--gl)}
+/* ADMIN */
+.aly{display:grid;grid-template-columns:210px 1fr;min-height:calc(100vh - 56px)}
+.asb{background:#1e1b4b;display:flex;flex-direction:column}
+.aslg{padding:16px;border-bottom:1px solid rgba(255,255,255,.07)}
+.asln{color:#fff;font-size:13px;font-weight:800}
+.aslst{color:rgba(255,255,255,.4);font-size:11px;margin-top:1px}
+.an{display:flex;align-items:center;gap:9px;padding:10px 14px;color:rgba(255,255,255,.55);font-size:13px;font-weight:600;cursor:pointer;transition:.2s;border-left:3px solid transparent}
+.an:hover{background:rgba(255,255,255,.06);color:#fff}
+.an.on{background:rgba(255,255,255,.08);color:#fff;border-left-color:#a78bfa}
+.am2{background:var(--bg);padding:20px;overflow-y:auto}
+/* CHART */
+.chw{display:flex;align-items:flex-end;gap:5px;height:110px;padding:0 3px}
+.cc{flex:1;display:flex;flex-direction:column;align-items:center}
+.cb2{width:100%;border-radius:3px 3px 0 0;opacity:.75;cursor:pointer;transition:.2s;min-height:3px}
+.cb2:hover{opacity:1}
+.cl{font-size:9px;color:var(--t3);margin-top:3px;font-weight:600}
+/* MAP */
+#dlmap,#rlmap,#almap{width:100%;height:100%;min-height:200px}
+/* WHATSAPP */
+.wach{background:#e5ddd5;border-radius:var(--r);padding:14px;max-height:290px;overflow-y:auto}
+.wam{max-width:74%;margin-bottom:9px;padding:9px 11px;border-radius:11px;font-size:13px;line-height:1.5}
+.wain{background:#fff;border-radius:0 11px 11px 11px}
+.waout{background:#dcf8c6;border-radius:11px 11px 0 11px;margin-left:auto}
+.watm{font-size:10px;color:#999;text-align:right;margin-top:3px}
+.wair{display:flex;gap:7px;margin-top:9px}
+.wainp{flex:1;padding:9px 13px;border:1px solid var(--br);border-radius:20px;font-family:'Baloo 2',sans-serif;font-size:13px}
+.wasn{background:var(--g);color:#fff;border:none;border-radius:50%;width:38px;height:38px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center}
+/* SETTINGS ROW */
+.srow{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--br)}
+.srow:last-child{border-bottom:none}
+.srinf{flex:1}
+.srl{font-size:13px;font-weight:700}
+.srs{font-size:11px;color:var(--t3);margin-top:1px}
+/* PAYMENT */
+.pmeth{display:flex;flex-direction:column;gap:7px}
+.pmr{display:flex;align-items:center;gap:9px;cursor:pointer;padding:9px;border:1.5px solid var(--br);border-radius:var(--rs)}
+.pmr:has(input:checked){border-color:var(--g);background:var(--gl)}
+/* PROMO BANNER */
+.pcbr{background:var(--gl);border-radius:var(--rs);padding:12px;margin-bottom:14px;border:1px solid var(--gm)}
+</style>
+</head>
+<body>
+
+<!-- SETUP WIZARD -->
+<div id="setup-screen" class="sws" style="display:none">
+  <div class="swc">
+    <div class="swl">⚡ NewasaZone</div>
+    <div class="swsub">Platform setup wizard — 3 minutes to go live</div>
+    <div class="sdots"><div class="sd on" id="dot-0"></div><div class="sd" id="dot-1"></div><div class="sd" id="dot-2"></div><div class="sd" id="dot-3"></div></div>
+
+    <div class="step on" id="step-0">
+      <div class="stitle">🔥 Step 1: Connect Firebase (Database)</div>
+      <div class="sdesc">Firebase stores all orders, merchants, users and riders in real-time. Free for 50,000 reads/day. Create a project at <strong>console.firebase.google.com</strong> → Web app → copy config below.</div>
+      <div class="fr"><label class="lbl">Firebase API Key *</label><input class="inp" id="s-fbkey" placeholder="AIzaSy..." value="AIzaSyC0KaDA64_D5PYd9AxFHcom0Gki1QfdIc8"></div>
+      <div class="fr"><label class="lbl">Auth Domain *</label><input class="inp" id="s-fbdomain" placeholder="your-project.firebaseapp.com" value="newasazone.firebaseapp.com"></div>
+      <div class="fr"><label class="lbl">Project ID *</label><input class="inp" id="s-fbproject" placeholder="newasazone-app" value="newasazone"></div>
+      <div class="fr"><label class="lbl">Storage Bucket</label><input class="inp" id="s-fbstorage" placeholder="newasazone-app.appspot.com" value="newasazone.firebasestorage.app"></div>
+      <div class="fr"><label class="lbl">Messaging Sender ID</label><input class="inp" id="s-fbmsg" placeholder="123456789" value="67482176953"></div>
+      <div class="fr"><label class="lbl">App ID</label><input class="inp" id="s-fbappid" placeholder="1:123456789:web:abc..." value="1:67482176953:web:66f8939680cafbaa9b3a68"></div>
+      <div style="background:var(--gl);border-radius:var(--rs);padding:10px 12px;margin-top:4px;font-size:12px;color:var(--gd);font-weight:600">✅ Your NewasaZone Firebase project is pre-filled. Just click Connect below.</div>
+      <button class="btn btp" style="width:100%;margin-top:4px" onclick="testFirebase()">🔥 Test & Connect Firebase</button>
+      <button class="btn bto" style="width:100%;margin-top:8px" onclick="skipToDemo()">▶ Skip — Use Demo Mode (no real DB)</button>
+    </div>
+
+    <div class="step" id="step-1">
+      <div class="stitle">💳 Step 2: Razorpay Payments</div>
+      <div class="sdesc">Razorpay handles UPI, card, and wallet payments. Create account at <strong>razorpay.com</strong> → Settings → API Keys → copy Key ID.</div>
+      <div class="fr"><label class="lbl">Razorpay Key ID</label><input class="inp" id="s-rzp" placeholder="rzp_test_xxxxxxxxxxxxxxxx"></div>
+      <div style="background:var(--sf2);border-radius:var(--rs);padding:12px;margin-top:6px;border:1px solid var(--br)">
+        <div style="font-size:13px;font-weight:700">📌 Webhook URL (copy to Razorpay dashboard)</div>
+        <div style="font-size:12px;color:var(--t2);margin-top:2px">Razorpay → Settings → Webhooks → Add webhook</div>
+        <code class="ckey" id="webhook-url">https://your-domain.com/api/razorpay-webhook</code>
+      </div>
+      <button class="btn btp" style="width:100%;margin-top:12px" onclick="nextStep()">✅ Save & continue</button>
+      <button class="btn bto" style="width:100%;margin-top:8px" onclick="nextStep()">Skip — add later</button>
+    </div>
+
+    <div class="step" id="step-2">
+      <div class="stitle">💬 Step 3: WhatsApp & SMS (MSG91)</div>
+      <div class="sdesc">MSG91 sends WhatsApp order notifications. Sign up at <strong>msg91.com</strong> → API → copy auth key.</div>
+      <div class="fr"><label class="lbl">MSG91 Auth Key</label><input class="inp" id="s-msg91" placeholder="xxxxxxxxxxxxxxxxxxxxxx"></div>
+      <div class="fr"><label class="lbl">WhatsApp Business Number</label><input class="inp" id="s-waphone" placeholder="+91 98765 43210"></div>
+      <button class="btn btp" style="width:100%;margin-top:8px" onclick="nextStep()">✅ Save & continue</button>
+      <button class="btn bto" style="width:100%;margin-top:8px" onclick="nextStep()">Skip — add later</button>
+    </div>
+
+    <div class="step" id="step-3">
+      <div class="stitle">🏙️ Step 4: Your business info</div>
+      <div class="sdesc">Basic info shown to customers and merchants.</div>
+      <div class="fr"><label class="lbl">Platform name</label><input class="inp" id="s-name" value="NewasaZone"></div>
+      <div class="fr"><label class="lbl">Town / city</label><input class="inp" id="s-city" value="Newasa, Maharashtra 414603"></div>
+      <div class="fr"><label class="lbl">Your contact number</label><input class="inp" id="s-contact" placeholder="+91 XXXXX XXXXX"></div>
+      <div class="fr"><label class="lbl">Delivery radius (km)</label><input class="inp" id="s-radius" value="15" type="number"></div>
+      <div class="fr"><label class="lbl">Base delivery fee (₹)</label><input class="inp" id="s-delfee" value="20" type="number"></div>
+      <button class="btn btp" style="width:100%;margin-top:8px" onclick="finishSetup()">🚀 Launch NewasaZone!</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div id="auth-screen" style="display:none">
+  <div class="aw">
+    <div class="ac">
+      <div class="al">⚡ NewasaZone</div>
+      <div class="as2">Sign in with your mobile number</div>
+      <div id="auth-phone-step">
+        <div class="rg">
+          <div class="rl sel" id="role-customer" onclick="selectRole('customer')"><div class="ri">👤</div><div class="rn">Customer</div></div>
+          <div class="rl" id="role-merchant" onclick="selectRole('merchant')"><div class="ri">🏪</div><div class="rn">Merchant</div></div>
+          <div class="rl" id="role-rider" onclick="selectRole('rider')"><div class="ri">🏍️</div><div class="rn">Rider</div></div>
+          <div class="rl" id="role-admin" onclick="selectRole('admin')"><div class="ri">⚙️</div><div class="rn">Admin</div></div>
+        </div>
+        <div class="fr"><label class="lbl">Mobile number</label>
+          <div style="display:flex;gap:7px"><input class="inp" style="width:58px" value="+91" readonly><input class="inp" id="auth-phone" placeholder="98765 43210" type="tel" maxlength="10"></div>
+        </div>
+        <button class="btn btp" style="width:100%" onclick="sendOTP()">Send OTP via WhatsApp</button>
+        <div style="text-align:center;margin-top:11px;font-size:12px;color:var(--t3)">— or —</div>
+        <button class="btn bto" style="width:100%;margin-top:7px" onclick="demoLogin()">▶ Continue in Demo Mode</button>
+      </div>
+      <div id="auth-otp-step" style="display:none">
+        <div style="text-align:center;margin-bottom:14px;font-size:14px;color:var(--t2)">OTP sent to <strong id="otp-phone-display"></strong></div>
+        <div class="oi">
+          <input class="oinp" maxlength="1" id="otp0" oninput="otpNext(0)">
+          <input class="oinp" maxlength="1" id="otp1" oninput="otpNext(1)">
+          <input class="oinp" maxlength="1" id="otp2" oninput="otpNext(2)">
+          <input class="oinp" maxlength="1" id="otp3" oninput="otpNext(3)">
+          <input class="oinp" maxlength="1" id="otp4" oninput="otpNext(4)">
+          <input class="oinp" maxlength="1" id="otp5" oninput="otpNext(5)">
+        </div>
+        <div style="text-align:center;font-size:12px;color:var(--t3);margin-bottom:8px">💡 Demo mode: enter any 6 digits</div>
+        <button class="btn btp" style="width:100%" onclick="verifyOTP()">Verify OTP</button>
+        <div style="text-align:center;margin-top:9px;font-size:12px;color:var(--t3);cursor:pointer" onclick="resendOTP()">Resend OTP in <span id="otp-timer">30s</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="main-app" style="display:none">
+  <div class="nav">
+    <div class="logo">⚡ Newasa<span>Zone</span></div>
+    <div class="ntabs" id="main-nav-tabs"></div>
+    <div style="display:flex;align-items:center;gap:9px">
+      <span style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--t2)"><span class="ldot"></span>Live</span>
+      <button class="btn bto bts" onclick="showUserMenu()">👤 <span id="nav-user-name">User</span></button>
+    </div>
+  </div>
+  <!-- CUSTOMER: HOME -->
+  <div id="view-cust-home" class="sc cv">
+    <div class="ch2">
+      <div class="cgr">Good morning 🌤️</div>
+      <div class="cnm" id="cust-name-display">Welcome to NewasaZone</div>
+      <div class="cloc">📍 <span id="cust-location">Newasa, MH 414603</span></div>
+      <div class="sb2" onclick="document.getElementById('search-input').focus()">
+        <span>🔍</span><input id="search-input" placeholder="Search kirana, plumber, food, medicine..." oninput="liveSearch(this.value)">
+      </div>
+    </div>
+    <div class="osc">
+      <div class="ocard"><div class="otitle">🎉 Grand Launch Offer!</div><div class="osub">First order FREE delivery</div><div class="ocode">NEWASA1</div></div>
+      <div class="ocard" style="background:linear-gradient(135deg,#1d4ed8,#7c3aed)"><div class="otitle">💊 Medicine delivery</div><div class="osub">In 30 min · All pharmacies open</div><div class="ocode">HEALTH10</div></div>
+      <div class="ocard" style="background:linear-gradient(135deg,#b45309,#d97706)"><div class="otitle">🌾 Agri inputs</div><div class="osub">Seeds & fertilizer to farm</div><div class="ocode">KISAN20</div></div>
+    </div>
+    <div class="shd"><div class="stl">Categories</div><div class="sall" onclick="showAllCats()">See all 25</div></div>
+    <div class="csc" id="cust-cat-scroll"></div>
+    <div class="shd"><div class="stl">Nearby stores</div><span class="bdg bg" id="open-count">Loading...</span></div>
+    <div id="search-results" style="display:none;padding:0 14px 7px"></div>
+    <div class="sgrid" id="cust-store-grid"></div>
+  </div>
+
+  <!-- CUSTOMER: STORE -->
+  <div id="view-cust-store" class="sc cv" style="display:none">
+    <div style="padding:13px 14px;background:var(--sf);border-bottom:1px solid var(--br);display:flex;align-items:center;gap:9px">
+      <button class="btn bto bts" onclick="showView('cust-home')">← Back</button>
+      <div><div id="store-view-name" style="font-size:15px;font-weight:800"></div><div id="store-view-meta" style="font-size:12px;color:var(--t3)"></div></div>
+    </div>
+    <div id="store-product-list" class="plist"></div>
+  </div>
+
+  <!-- CUSTOMER: CART -->
+  <div id="view-cust-cart" class="sc cv" style="display:none">
+    <div class="pg">
+      <div class="ptitle">🛒 Your cart</div>
+      <div id="cart-items" style="margin-top:14px"></div>
+      <div id="cart-summary" class="card" style="padding:14px;margin-top:14px"></div>
+    </div>
+    <div class="ckbar" id="checkout-bar" style="display:none">
+      <button class="ckbtn" onclick="initiateCheckout()"><span>Place Order</span><span id="checkout-total">₹0</span></button>
+    </div>
+  </div>
+
+  <!-- CUSTOMER: ORDERS -->
+  <div id="view-cust-orders" class="sc cv" style="display:none">
+    <div class="pg"><div class="ptitle">📦 My orders</div><div id="my-orders-list" style="margin-top:14px"></div></div>
+  </div>
+
+  <!-- CUSTOMER: TRACK -->
+  <div id="view-cust-track" class="sc cv" style="display:none">
+    <div class="pg">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">
+        <button class="btn bto bts" onclick="showView('cust-orders')">← Back</button>
+        <div class="ptitle" style="margin-bottom:0">Tracking order</div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch"><div class="ct" id="track-order-id">Order #NZ001</div><span class="bdg ba">On the way</span></div>
+        <div class="cb">
+          <div class="mpc" id="dlmap"></div>
+          <div style="margin-top:11px;font-size:13px;font-weight:600">🏍️ Rider: <span id="track-rider">Suresh Jadhav</span> · <span style="color:var(--g)">ETA 8 min</span></div>
+          <div style="font-size:12px;color:var(--t3);margin-top:2px">📞 +91 98765 XXXXX</div>
+        </div>
+      </div>
+      <div class="card"><div class="ch"><div class="ct">Order status</div></div><div class="cb"><div class="tst" id="track-steps"></div></div></div>
+    </div>
+  </div>
+
+  <!-- CUSTOMER: PROFILE -->
+  <div id="view-cust-profile" class="sc cv" style="display:none">
+    <div class="pg">
+      <div class="ptitle">👤 My profile</div>
+      <div class="card" style="margin-top:14px">
+        <div class="cb">
+          <div style="text-align:center;padding:14px 0">
+            <div style="font-size:48px;margin-bottom:7px">👤</div>
+            <div id="profile-name-display" style="font-size:17px;font-weight:800">Demo User</div>
+            <div id="profile-phone-display" style="font-size:13px;color:var(--t3);margin-top:3px">+91 98765 43210</div>
+          </div>
+          <div class="dvd"></div>
+          <div class="srow"><div class="srinf"><div class="srl">Notifications</div><div class="srs">Order updates on WhatsApp</div></div><input type="checkbox" class="sw" checked></div>
+          <div class="srow"><div class="srinf"><div class="srl">Language</div><div class="srs">मराठी / English / हिंदी</div></div><button class="btn bto bts" onclick="notify('Language changed to Marathi!','info')">मराठी</button></div>
+          <div class="srow"><div class="srinf"><div class="srl">Addresses</div><div class="srs">Manage delivery addresses</div></div><button class="btn bto bts">Manage</button></div>
+          <div class="dvd"></div>
+          <button class="btn btd" style="width:100%" onclick="logout()">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="cust-bottom-nav" class="bnav" style="display:none">
+    <div class="bni on" onclick="showCustView('home',this)"><span class="bic">🏠</span><div class="bil">Home</div></div>
+    <div class="bni" onclick="showCustView('orders',this)"><span class="bic">📦</span><div class="bil">Orders</div></div>
+    <div class="bni" onclick="showCustView('cart',this)"><span class="bic">🛒</span><div class="bil">Cart</div><div class="cba" id="cart-badge" style="display:none">0</div></div>
+    <div class="bni" onclick="showCustView('profile',this)"><span class="bic">👤</span><div class="bil">Profile</div></div>
+  </div>
+  <!-- MERCHANT -->
+  <div id="view-merchant" class="sc" style="display:none">
+    <div class="mly">
+      <div class="msb">
+        <div class="mslg"><div class="msln" id="merch-store-name">🏪 My Store</div><div class="mslst" id="merch-store-status">● Open</div></div>
+        <div class="msn">
+          <div class="mn on" onclick="setMerchTab('orders',this)"><span class="mni">📦</span>Orders</div>
+          <div class="mn" onclick="setMerchTab('catalogue',this)"><span class="mni">🛒</span>Catalogue</div>
+          <div class="mn" onclick="setMerchTab('earnings',this)"><span class="mni">💰</span>Earnings</div>
+          <div class="mn" onclick="setMerchTab('analytics',this)"><span class="mni">📊</span>Analytics</div>
+          <div class="mn" onclick="setMerchTab('settings',this)"><span class="mni">⚙️</span>Settings</div>
+        </div>
+        <div class="msft">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="color:#fff;font-size:12px;font-weight:700">Store online</span><input type="checkbox" class="sw" id="store-online" checked onchange="toggleStoreStatus()"></div>
+          <button class="btn btd bts" style="width:100%" onclick="logout()">Sign out</button>
+        </div>
+      </div>
+      <div class="mm">
+        <div id="merch-tab-orders" class="pg">
+          <div class="ptitle">Today's orders</div>
+          <div class="psub">Real-time incoming orders — accept or reject</div>
+          <div class="g4" style="margin-bottom:18px" id="merch-stats-row"></div>
+          <div style="margin-bottom:18px">
+            <div style="font-size:15px;font-weight:800;margin-bottom:9px;display:flex;align-items:center;gap:7px">🔴 Incoming <span class="ldot"></span></div>
+            <div id="incoming-orders-list"></div>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:800;margin-bottom:9px">📋 All orders today</div>
+            <div class="card"><div class="cb" style="padding:0"><table class="tbl"><thead><tr><th>#</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Time</th></tr></thead><tbody id="merch-all-orders"></tbody></table></div></div>
+          </div>
+        </div>
+        <div id="merch-tab-catalogue" class="pg" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+            <div><div class="ptitle">Product catalogue</div><div class="psub">Manage your products and prices</div></div>
+            <button class="btn btp" onclick="openAddProduct()">+ Add product</button>
+          </div>
+          <div id="merch-catalogue-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:11px"></div>
+        </div>
+        <div id="merch-tab-earnings" class="pg" style="display:none">
+          <div class="ptitle">Earnings & payouts</div>
+          <div class="psub">Your revenue minus platform commission</div>
+          <div class="g4" id="merch-earn-stats" style="margin-bottom:18px"></div>
+          <div class="g2">
+            <div class="card"><div class="ch"><div class="ct">Revenue this week</div></div><div class="cb"><div class="chw" id="merch-rev-chart"></div></div></div>
+            <div class="card"><div class="ch"><div class="ct">Upcoming payout</div></div><div class="cb" id="payout-info"></div></div>
+          </div>
+        </div>
+        <div id="merch-tab-analytics" class="pg" style="display:none">
+          <div class="ptitle">Store analytics</div>
+          <div class="psub">Customer insights and order patterns</div>
+          <div class="g4" style="margin-bottom:18px" id="merch-analytics-stats"></div>
+          <div class="g2">
+            <div class="card"><div class="ch"><div class="ct">Top selling products</div></div><div class="cb" id="top-products"></div></div>
+            <div class="card"><div class="ch"><div class="ct">Orders by hour</div></div><div class="cb"><div class="chw" id="hourly-chart"></div></div></div>
+          </div>
+        </div>
+        <div id="merch-tab-settings" class="pg" style="display:none">
+          <div class="ptitle">Store settings</div>
+          <div class="g2">
+            <div class="card"><div class="ch"><div class="ct">Store info</div></div>
+              <div class="cb">
+                <div class="fr"><label class="lbl">Store name</label><input class="inp" id="merch-set-name" value="Ganesh Kirana"></div>
+                <div class="fr"><label class="lbl">Category</label><select class="sel"><option>Kirana / Grocery</option><option>Restaurant</option><option>Medical</option><option>Vegetables</option><option>Services</option></select></div>
+                <div class="fr"><label class="lbl">Opens at</label><input class="inp" type="time" value="08:00"></div>
+                <div class="fr"><label class="lbl">Closes at</label><input class="inp" type="time" value="22:00"></div>
+                <div class="fr"><label class="lbl">UPI ID for payouts</label><input class="inp" id="merch-upi" placeholder="store@upi"></div>
+                <button class="btn btp" onclick="saveMerchSettings()">Save changes</button>
+              </div>
+            </div>
+            <div class="card"><div class="ch"><div class="ct">Notifications</div></div>
+              <div class="cb">
+                <div class="srow"><div class="srinf"><div class="srl">New order alert (WhatsApp)</div></div><input type="checkbox" class="sw" checked></div>
+                <div class="srow"><div class="srinf"><div class="srl">New order sound</div></div><input type="checkbox" class="sw" checked></div>
+                <div class="srow"><div class="srinf"><div class="srl">Auto-accept orders</div></div><input type="checkbox" class="sw"></div>
+                <div class="srow"><div class="srinf"><div class="srl">Featured listing</div><div class="srs">Show at top of category</div></div><input type="checkbox" class="sw" checked></div>
+                <div class="srow"><div class="srinf"><div class="srl">WhatsApp ordering</div><div class="srs">Accept orders via WhatsApp bot</div></div><input type="checkbox" class="sw" checked></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- RIDER -->
+  <div id="view-rider" class="sc" style="display:none">
+    <div class="rly">
+      <div class="rsb">
+        <div class="rpr"><div class="rav">🏍️</div><div class="rnm" id="rider-name-display">Suresh Jadhav</div><div class="rrt">⭐ 4.9 · 127 deliveries</div></div>
+        <div class="rot">
+          <div><div class="rol" id="rider-online-label">● Online</div><div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:1px">Accepting orders</div></div>
+          <input type="checkbox" class="sw" id="rider-online-toggle" checked onchange="toggleRiderOnline()">
+        </div>
+        <div class="reg">
+          <div class="reb"><div class="rev" id="r-deliveries">0</div><div class="rel">Deliveries</div></div>
+          <div class="reb"><div class="rev" id="r-today-earn">₹0</div><div class="rel">Earned today</div></div>
+          <div class="reb"><div class="rev" id="r-km">0 km</div><div class="rel">Distance</div></div>
+          <div class="reb"><div class="rev" id="r-rating">4.9⭐</div><div class="rel">Rating</div></div>
+        </div>
+        <button class="btn btd bts" style="width:100%;margin-top:auto" onclick="logout()">Sign out</button>
+      </div>
+      <div class="rm">
+        <div class="ptitle">Delivery requests</div>
+        <div class="psub">Tap Accept to take an order</div>
+        <div class="mpc" id="rlmap" style="height:230px;margin-bottom:16px"></div>
+        <div id="rider-pending-list"></div>
+        <div style="margin-top:18px">
+          <div style="font-size:15px;font-weight:800;margin-bottom:9px">Today's deliveries</div>
+          <div id="rider-completed-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="view-admin" class="sc" style="display:none">
+    <div class="aly">
+      <div class="asb">
+        <div class="aslg"><div class="asln">⚙️ Admin Panel</div><div class="aslst">NewasaZone · Control center</div></div>
+        <div style="padding:7px 0">
+          <div class="an on" onclick="setAdminTab('overview',this)">📊 Overview</div>
+          <div class="an" onclick="setAdminTab('orders',this)">📦 All orders</div>
+          <div class="an" onclick="setAdminTab('merchants',this)">🏪 Merchants</div>
+          <div class="an" onclick="setAdminTab('riders',this)">🏍️ Riders</div>
+          <div class="an" onclick="setAdminTab('finance',this)">💰 Finance</div>
+          <div class="an" onclick="setAdminTab('marketing',this)">📣 Marketing</div>
+          <div class="an" onclick="setAdminTab('whatsapp',this)">💬 WhatsApp bot</div>
+          <div class="an" onclick="setAdminTab('settings',this)">🔧 Settings</div>
+        </div>
+        <div style="margin-top:auto;padding:13px 14px;border-top:1px solid rgba(255,255,255,.07)"><button class="btn btd bts" style="width:100%" onclick="logout()">Sign out</button></div>
+      </div>
+      <div class="am2">
+        <div id="admin-tab-overview">
+          <div class="ptitle">Platform overview</div>
+          <div class="psub">NewasaZone · Real-time dashboard</div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:18px" id="admin-kpi-row"></div>
+          <div class="g2" style="margin-bottom:14px">
+            <div class="card"><div class="ch"><div class="ct">GMV this week</div></div><div class="cb"><div class="chw" id="admin-gmv-chart"></div></div></div>
+            <div class="card"><div class="ch"><div class="ct">Orders by category</div></div><div class="cb" id="admin-cat-breakdown"></div></div>
+          </div>
+          <div class="card"><div class="ch"><div class="ct">📍 Live delivery map</div><span class="bdg bg"><span class="ldot"></span> Live</span></div><div class="cb" style="padding:0"><div class="mpc" id="almap" style="height:260px"></div></div></div>
+        </div>
+        <div id="admin-tab-orders" style="display:none">
+          <div class="ptitle">All orders</div>
+          <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap" id="order-filters">
+            <button class="btn bto bts" onclick="filterOrders('all',this)">All</button>
+            <button class="btn bto bts" onclick="filterOrders('new',this)">New</button>
+            <button class="btn bto bts" onclick="filterOrders('preparing',this)">Preparing</button>
+            <button class="btn bto bts" onclick="filterOrders('on_the_way',this)">On the way</button>
+            <button class="btn bto bts" onclick="filterOrders('delivered',this)">Delivered</button>
+            <button class="btn bto bts" onclick="filterOrders('cancelled',this)">Cancelled</button>
+          </div>
+          <div class="card"><div class="cb" style="padding:0"><table class="tbl"><thead><tr><th>Order #</th><th>Customer</th><th>Store</th><th>Items</th><th>Amount</th><th>Status</th><th>Rider</th><th>Time</th></tr></thead><tbody id="admin-orders-body"></tbody></table></div></div>
+        </div>
+        <div id="admin-tab-merchants" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+            <div><div class="ptitle">Merchants</div><div class="psub">Manage all registered stores and service providers</div></div>
+            <button class="btn btp" onclick="openMerchantOnboard()">+ Onboard merchant</button>
+          </div>
+          <div class="card"><div class="cb" style="padding:0"><table class="tbl"><thead><tr><th>Store</th><th>Category</th><th>Owner</th><th>Phone</th><th>Orders</th><th>Rating</th><th>Status</th><th>Actions</th></tr></thead><tbody id="admin-merchants-body"></tbody></table></div></div>
+        </div>
+        <div id="admin-tab-riders" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+            <div><div class="ptitle">Riders</div><div class="psub">Track all delivery riders</div></div>
+            <button class="btn btp" onclick="openRiderOnboard()">+ Add rider</button>
+          </div>
+          <div class="g3" style="margin-bottom:14px" id="rider-stats-row"></div>
+          <div class="card"><div class="cb" style="padding:0"><table class="tbl"><thead><tr><th>Rider</th><th>Phone</th><th>Status</th><th>Deliveries today</th><th>Earned today</th><th>Rating</th><th>Actions</th></tr></thead><tbody id="admin-riders-body"></tbody></table></div></div>
+        </div>
+        <div id="admin-tab-finance" style="display:none">
+          <div class="ptitle">Finance & payouts</div>
+          <div class="g4" style="margin-bottom:18px" id="finance-kpi"></div>
+          <div class="g2">
+            <div class="card"><div class="ch"><div class="ct">Revenue breakdown</div></div><div class="cb" id="rev-breakdown"></div></div>
+            <div class="card"><div class="ch"><div class="ct">Pending payouts</div></div>
+              <div class="cb">
+                <div style="margin-bottom:9px;font-size:13px;font-weight:700">Merchants due today</div>
+                <div id="merchant-payouts-list"></div>
+                <button class="btn btp" style="width:100%;margin-top:11px" onclick="processPayouts()">⚡ Process all payouts via Razorpay</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="admin-tab-marketing" style="display:none">
+          <div class="ptitle">Marketing & promotions</div>
+          <div class="psub">Zero-cost and paid marketing tools</div>
+          <div class="g2" style="margin-bottom:14px">
+            <div class="card"><div class="ch"><div class="ct">Active promo codes</div><button class="btn btp bts" onclick="openPromoModal()">+ New code</button></div>
+              <div class="cb"><table class="tbl"><thead><tr><th>Code</th><th>Discount</th><th>Uses</th><th>Status</th></tr></thead><tbody id="promo-codes-body"></tbody></table></div>
+            </div>
+            <div class="card"><div class="ch"><div class="ct">WhatsApp broadcast</div></div>
+              <div class="cb">
+                <div class="fr"><label class="lbl">Message (Marathi/English)</label><textarea class="inp" rows="4" id="broadcast-msg" placeholder="नमस्कार! NewasaZone वर आज special offer..."></textarea></div>
+                <div class="fr"><label class="lbl">Target audience</label><select class="sel"><option>All customers</option><option>Customers who ordered in last 7 days</option><option>New customers</option><option>All merchants</option></select></div>
+                <button class="btn btp" style="width:100%" onclick="sendBroadcast()">📢 Send WhatsApp broadcast</button>
+              </div>
+            </div>
+          </div>
+          <div id="marketing-tactics"></div>
+        </div>
+        <div id="admin-tab-whatsapp" style="display:none">
+          <div class="ptitle">WhatsApp ordering bot</div>
+          <div class="psub">Simulate and configure the WhatsApp order flow</div>
+          <div class="g2">
+            <div class="card"><div class="ch"><div class="ct">💬 Bot simulator</div></div>
+              <div class="cb">
+                <div class="wach" id="wa-chat-area"></div>
+                <div class="wair"><input class="wainp" id="wa-user-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter')waSend()"><button class="wasn" onclick="waSend()">➤</button></div>
+              </div>
+            </div>
+            <div class="card"><div class="ch"><div class="ct">Bot flow settings</div></div>
+              <div class="cb">
+                <div class="srow"><div class="srinf"><div class="srl">Auto-reply enabled</div></div><input type="checkbox" class="sw" checked></div>
+                <div class="srow"><div class="srinf"><div class="srl">Send order confirmation</div></div><input type="checkbox" class="sw" checked></div>
+                <div class="srow"><div class="srinf"><div class="srl">Delivery updates</div></div><input type="checkbox" class="sw" checked></div>
+                <div class="srow"><div class="srinf"><div class="srl">Marathi replies</div></div><input type="checkbox" class="sw" checked></div>
+                <div class="dvd"></div>
+                <div class="fr"><label class="lbl">Bot WhatsApp number</label><input class="inp" id="wa-bot-number" value="+91 98765 43210"></div>
+                <div class="fr"><label class="lbl">MSG91 Auth Key</label><input class="inp" id="wa-msg91-key" placeholder="Enter MSG91 key..."></div>
+                <button class="btn btp" onclick="saveWASettings()">Save settings</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="admin-tab-settings" style="display:none">
+          <div class="ptitle">Platform settings</div>
+          <div class="g2">
+            <div class="card"><div class="ch"><div class="ct">Commission rates</div></div><div class="cb" id="commission-settings"></div></div>
+            <div class="card"><div class="ch"><div class="ct">Delivery settings</div></div>
+              <div class="cb">
+                <div class="fr"><label class="lbl">Base delivery fee (₹)</label><input class="inp" value="20"></div>
+                <div class="fr"><label class="lbl">Free delivery above (₹)</label><input class="inp" value="300"></div>
+                <div class="fr"><label class="lbl">Max delivery radius (km)</label><input class="inp" value="15"></div>
+                <div class="fr"><label class="lbl">Per km surcharge (₹)</label><input class="inp" value="3"></div>
+                <div class="srow"><div class="srinf"><div class="srl">Cash on delivery</div></div><input type="checkbox" class="sw" checked></div>
+                <div class="srow"><div class="srinf"><div class="srl">UPI payments</div></div><input type="checkbox" class="sw" checked></div>
+                <button class="btn btp" style="margin-top:11px" onclick="notify('Settings saved!','ok')">Save settings</button>
+              </div>
+            </div>
+            <div class="card"><div class="ch"><div class="ct">Integrations status</div></div><div class="cb" id="integrations-status"></div></div>
+            <div class="card"><div class="ch"><div class="ct">🔧 Reconfigure</div></div><div class="cb"><div style="font-size:13px;color:var(--t2);margin-bottom:11px">Update Firebase, Razorpay, or MSG91 keys</div><button class="btn bto" style="width:100%" onclick="openSetup()">Open setup wizard</button></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONBOARD -->
+  <div id="view-onboard" class="sc" style="display:none">
+    <div class="pg" style="max-width:640px;margin:0 auto">
+      <div style="display:flex;align-items:center;gap:11px;margin-bottom:18px">
+        <button class="btn bto bts" onclick="showView('admin');setAdminTab('merchants',document.querySelector('.an[onclick*=merchants]'))">← Back</button>
+        <div class="ptitle" style="margin-bottom:0">Onboard merchant</div>
+      </div>
+      <div class="card"><div class="ch"><div class="ct">📋 Store registration</div></div>
+        <div class="cb">
+          <div class="g2"><div class="fr"><label class="lbl">Owner name *</label><input class="inp" id="ob-owner" placeholder="e.g. Ramesh Shinde"></div><div class="fr"><label class="lbl">Store / service name *</label><input class="inp" id="ob-store" placeholder="e.g. Ramesh Medical"></div></div>
+          <div class="g2"><div class="fr"><label class="lbl">Mobile number *</label><input class="inp" id="ob-mobile" placeholder="98765 43210" type="tel"></div>
+          <div class="fr"><label class="lbl">Category *</label><select class="sel" id="ob-cat">
+            <option value="">Select...</option><option>Kirana / General store</option><option>Restaurant / Hotel</option><option>Cafe / Tea stall</option><option>Medical / Pharmacy</option><option>Vegetables / Fruits</option><option>Electronics store</option><option>Furniture store</option><option>Stationery / Books</option><option>Plumber</option><option>Electrician</option><option>Carpenter</option><option>Mechanic</option><option>House cleaning</option><option>Salon / Barber</option><option>Printing / DTP</option><option>Agri inputs</option><option>Courier</option><option>Tuition / Coaching</option><option>Home cook / Tiffin</option><option>Doctor / Clinic</option><option>Other</option>
+          </select></div></div>
+          <div class="fr"><label class="lbl">Address in Newasa *</label><input class="inp" id="ob-addr" placeholder="Near bus stand, Main Road, Newasa 414603"></div>
+          <div class="g2"><div class="fr"><label class="lbl">UPI ID for payouts *</label><input class="inp" id="ob-upi" placeholder="store@upi"></div><div class="fr"><label class="lbl">GST number (optional)</label><input class="inp" id="ob-gst" placeholder="27XXXXX..."></div></div>
+          <div class="g2"><div class="fr"><label class="lbl">Opens at</label><input class="inp" type="time" id="ob-open" value="08:00"></div><div class="fr"><label class="lbl">Closes at</label><input class="inp" type="time" id="ob-close" value="22:00"></div></div>
+          <div class="fr"><label class="lbl">Description</label><textarea class="inp" rows="2" id="ob-desc" placeholder="Brief description..."></textarea></div>
+          <button class="btn btp" style="width:100%" onclick="submitMerchantOnboard()">✅ Register on NewasaZone</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px"><div class="ch"><div class="ct">🏍️ Rider registration</div></div>
+        <div class="cb">
+          <div class="g2"><div class="fr"><label class="lbl">Rider name *</label><input class="inp" id="r-name" placeholder="e.g. Suresh Jadhav"></div><div class="fr"><label class="lbl">Mobile number *</label><input class="inp" id="r-mobile" placeholder="98765 43210" type="tel"></div></div>
+          <div class="g2"><div class="fr"><label class="lbl">Vehicle type</label><select class="sel" id="r-vehicle"><option>Motorbike</option><option>Bicycle</option><option>Auto</option></select></div><div class="fr"><label class="lbl">UPI ID for daily payout *</label><input class="inp" id="r-upi" placeholder="rider@upi"></div></div>
+          <button class="btn btb" style="width:100%" onclick="submitRiderOnboard()">🏍️ Register rider</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- MODALS -->
+<div id="add-product-modal" style="display:none">
+  <div class="mo"><div class="mb">
+    <div class="mttl">Add product <button class="xcl" onclick="closeModal('add-product-modal')">✕</button></div>
+    <div class="fr"><label class="lbl">Product name *</label><input class="inp" id="mp-name" placeholder="e.g. Aashirvaad Atta 5kg"></div>
+    <div class="g2"><div class="fr"><label class="lbl">Price (₹) *</label><input class="inp" type="number" id="mp-price" placeholder="285"></div><div class="fr"><label class="lbl">Stock qty *</label><input class="inp" type="number" id="mp-stock" placeholder="20"></div></div>
+    <div class="fr"><label class="lbl">Category</label><select class="sel" id="mp-cat"><option>Grocery</option><option>Snacks</option><option>Beverages</option><option>Personal care</option><option>Dairy</option><option>Vegetables</option><option>Medicines</option><option>Other</option></select></div>
+    <div class="fr"><label class="lbl">Emoji icon</label><input class="inp" id="mp-emoji" placeholder="🥛" maxlength="2"></div>
+    <div class="fr"><label class="lbl">Description</label><input class="inp" id="mp-desc" placeholder="Short description..."></div>
+    <button class="btn btp" style="width:100%" onclick="saveProduct()">Add product</button>
+  </div></div>
+</div>
+
+<div id="promo-modal" style="display:none">
+  <div class="mo"><div class="mb">
+    <div class="mttl">Create promo code <button class="xcl" onclick="closeModal('promo-modal')">✕</button></div>
+    <div class="fr"><label class="lbl">Promo code</label><input class="inp" id="pm-code" placeholder="NEWASA50"></div>
+    <div class="g2"><div class="fr"><label class="lbl">Discount type</label><select class="sel" id="pm-type"><option>Percentage (%)</option><option>Flat (₹)</option></select></div><div class="fr"><label class="lbl">Discount value</label><input class="inp" type="number" id="pm-val" placeholder="20"></div></div>
+    <div class="g2"><div class="fr"><label class="lbl">Max uses</label><input class="inp" type="number" id="pm-uses" placeholder="100"></div><div class="fr"><label class="lbl">Min order value (₹)</label><input class="inp" type="number" id="pm-min" placeholder="0"></div></div>
+    <button class="btn btp" style="width:100%" onclick="createPromo()">Create promo code</button>
+  </div></div>
+</div>
+
+<div id="payment-modal" style="display:none">
+  <div class="mo"><div class="mb">
+    <div class="mttl">Complete payment <button class="xcl" onclick="closeModal('payment-modal')">✕</button></div>
+    <div class="pcbr"><div style="font-size:15px;font-weight:800;color:var(--gd)">Order summary</div><div id="payment-summary" style="margin-top:7px;font-size:13px;color:var(--t2)"></div></div>
+    <div class="fr"><label class="lbl">Promo code</label><div style="display:flex;gap:7px"><input class="inp" id="promo-code-input" placeholder="Enter promo code"><button class="btn bto bts" onclick="applyPromo()">Apply</button></div></div>
+    <div id="promo-applied" style="display:none;color:var(--g);font-size:12px;font-weight:700;margin-bottom:7px">✅ Promo applied!</div>
+    <div style="margin-bottom:14px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:9px">Payment method</div>
+      <div class="pmeth">
+        <label class="pmr"><input type="radio" name="pay-method" value="upi" checked> <span>📱 UPI / PhonePe / GPay</span></label>
+        <label class="pmr"><input type="radio" name="pay-method" value="card"> <span>💳 Credit / Debit card</span></label>
+        <label class="pmr"><input type="radio" name="pay-method" value="cod"> <span>💵 Cash on delivery</span></label>
+      </div>
+    </div>
+    <button class="btn btp" style="width:100%;padding:13px;font-size:14px" onclick="processPayment()">Pay <span id="pay-amount">₹0</span></button>
+  </div></div>
+</div>
+
+<div class="ntf" id="notif-toast"></div>
+<script>
+const STATE = {
+  config: {}, currentRole:'customer', currentUser:null, cart:[], orders:[], merchants:[], riders:[], promoCodes:[],
+  demoMode:true, db:null, auth:null, maps:{}, rzpKey:'', orderIdCounter:1100,
+};
+
+const DEMO_MERCHANTS = [
+  {id:'m1',name:'Ganesh Kirana',cat:'Kirana / General store',owner:'Ganesh Patil',phone:'9876543210',orders:34,rating:4.8,status:'active',open:true,emoji:'🛒',upi:'ganesh@upi',products:[
+    {id:'p1',name:'Aashirvaad Atta 5kg',price:285,stock:12,emoji:'🌾',cat:'Grocery'},
+    {id:'p2',name:'Fortune Oil 1L',price:135,stock:8,emoji:'🛢️',cat:'Grocery'},
+    {id:'p3',name:'Tata Salt 1kg',price:22,stock:35,emoji:'🧂',cat:'Grocery'},
+    {id:'p4',name:'India Gate Rice 5kg',price:340,stock:20,emoji:'🍚',cat:'Grocery'},
+    {id:'p5',name:'Tata Tea Premium 250g',price:65,stock:15,emoji:'🍃',cat:'Grocery'},
+    {id:'p6',name:'Lifebuoy Soap',price:45,stock:28,emoji:'🧼',cat:'Personal care'},
+  ]},
+  {id:'m2',name:'Ramesh Medical',cat:'Medical / Pharmacy',owner:'Ramesh Sharma',phone:'9765432109',orders:22,rating:4.9,status:'active',open:true,emoji:'💊',upi:'ramesh@upi',products:[
+    {id:'p10',name:'Crocin 500mg (10 tabs)',price:22,stock:50,emoji:'💊',cat:'Medicines'},
+    {id:'p11',name:'Dolo 650 (10 tabs)',price:28,stock:45,emoji:'💊',cat:'Medicines'},
+    {id:'p12',name:'ORS Sachet (10 pack)',price:55,stock:30,emoji:'🧃',cat:'Medicines'},
+    {id:'p13',name:'Betadine 30ml',price:85,stock:20,emoji:'🩹',cat:'Medicines'},
+  ]},
+  {id:'m3',name:'Shivaji Sabziwala',cat:'Vegetables / Fruits',owner:'Shivaji More',phone:'9654321098',orders:18,rating:4.7,status:'active',open:true,emoji:'🥬',upi:'shivaji@upi',products:[
+    {id:'p20',name:'Tomato 1kg',price:30,stock:20,emoji:'🍅',cat:'Vegetables'},
+    {id:'p21',name:'Onion 1kg',price:25,stock:30,emoji:'🧅',cat:'Vegetables'},
+    {id:'p22',name:'Potato 1kg',price:22,stock:25,emoji:'🥔',cat:'Vegetables'},
+    {id:'p23',name:'Coriander bunch',price:10,stock:15,emoji:'🌿',cat:'Vegetables'},
+  ]},
+  {id:'m4',name:'Hotel Swad',cat:'Restaurant / Hotel',owner:'Sunil Jadhav',phone:'9543210987',orders:15,rating:4.6,status:'active',open:true,emoji:'🍛',upi:'swad@upi',products:[
+    {id:'p30',name:'Thali (full meal)',price:120,stock:30,emoji:'🍱',cat:'Food'},
+    {id:'p31',name:'Vada Pav',price:20,stock:50,emoji:'🍔',cat:'Snacks'},
+    {id:'p32',name:'Chai (cutting)',price:12,stock:100,emoji:'☕',cat:'Beverages'},
+    {id:'p33',name:'Misal Pav',price:60,stock:20,emoji:'🫕',cat:'Food'},
+  ]},
+  {id:'m5',name:'Mohan Plumber',cat:'Plumber',owner:'Mohan Gaikwad',phone:'9432109876',orders:8,rating:4.6,status:'active',open:true,emoji:'🔧',upi:'mohan@upi',products:[
+    {id:'p40',name:'Basic pipe repair',price:200,stock:99,emoji:'🔧',cat:'Services'},
+    {id:'p41',name:'Tap installation',price:350,stock:99,emoji:'🚿',cat:'Services'},
+    {id:'p42',name:'Full inspection visit',price:150,stock:99,emoji:'🔍',cat:'Services'},
+  ]},
+  {id:'m6',name:'Riya Electronics',cat:'Electronics store',owner:'Riya Kulkarni',phone:'9321098765',orders:0,rating:0,status:'pending',open:false,emoji:'📺',upi:'',products:[]},
+];
+
+const DEMO_ORDERS = [
+  {id:'NZ1038',custName:'Priya Deshpande',custPhone:'9887766554',store:'Ganesh Kirana',storeId:'m1',items:[{name:'Atta 5kg',qty:1,price:285},{name:'Tata Salt',qty:2,price:22}],total:329,status:'delivered',rider:'Suresh Jadhav',time:'09:14 AM',paid:'upi'},
+  {id:'NZ1039',custName:'Ravi Kulkarni',custPhone:'9776655443',store:'Ramesh Medical',storeId:'m2',items:[{name:'Crocin',qty:2,price:22},{name:'ORS Sachet',qty:1,price:55}],total:119,status:'on_the_way',rider:'Suresh Jadhav',time:'10:32 AM',paid:'cod'},
+  {id:'NZ1040',custName:'Sunita More',custPhone:'9665544332',store:'Shivaji Sabziwala',storeId:'m3',items:[{name:'Tomato 1kg',qty:2,price:30},{name:'Onion 1kg',qty:1,price:25}],total:105,status:'preparing',rider:'—',time:'11:05 AM',paid:'upi'},
+  {id:'NZ1041',custName:'Anil Pawar',custPhone:'9554433221',store:'Hotel Swad',storeId:'m4',items:[{name:'Thali',qty:2,price:120},{name:'Chai',qty:2,price:12}],total:264,status:'new',rider:'—',time:'11:42 AM',paid:'cod'},
+];
+
+const DEMO_RIDERS = [{id:'r1',name:'Suresh Jadhav',phone:'9876501234',vehicle:'Motorbike',status:'active',deliveries:7,earned:245,rating:4.9,online:true}];
+const DEMO_PROMOS = [
+  {code:'NEWASA1',type:'Percentage',val:100,minOrder:0,uses:0,maxUses:500,status:'active',desc:'Free delivery for all'},
+  {code:'HEALTH10',type:'Percentage',val:10,minOrder:100,uses:3,maxUses:200,status:'active',desc:'10% off medicines'},
+];
+
+const ALL_VERTICALS = [
+  {emoji:'🛒',name:'Kirana',cat:'Kirana / General store'},{emoji:'🥬',name:'Sabziwala',cat:'Vegetables / Fruits'},
+  {emoji:'💊',name:'Medical',cat:'Medical / Pharmacy'},{emoji:'🍛',name:'Restaurant',cat:'Restaurant / Hotel'},
+  {emoji:'☕',name:'Cafe',cat:'Cafe / Tea stall'},{emoji:'🥛',name:'Dairy',cat:'Dairy'},
+  {emoji:'🔧',name:'Plumber',cat:'Plumber'},{emoji:'⚡',name:'Electrician',cat:'Electrician'},
+  {emoji:'🪚',name:'Carpenter',cat:'Carpenter'},{emoji:'🧹',name:'Cleaning',cat:'House cleaning'},
+  {emoji:'🔩',name:'Mechanic',cat:'Mechanic'},{emoji:'🎨',name:'Painter',cat:'Painter'},
+  {emoji:'💈',name:'Salon',cat:'Salon / Barber'},{emoji:'📺',name:'Electronics',cat:'Electronics store'},
+  {emoji:'🪑',name:'Furniture',cat:'Furniture store'},{emoji:'📚',name:'Stationery',cat:'Stationery / Books'},
+  {emoji:'👗',name:'Clothing',cat:'Clothing'},{emoji:'🖨️',name:'Printing',cat:'Printing / DTP'},
+  {emoji:'🌾',name:'Agri inputs',cat:'Agri inputs'},{emoji:'📦',name:'Courier',cat:'Courier'},
+  {emoji:'🏥',name:'Doctor',cat:'Doctor / Clinic'},{emoji:'🧪',name:'Lab tests',cat:'Lab / Diagnostics'},
+  {emoji:'📝',name:'Coaching',cat:'Tuition / Coaching'},{emoji:'📄',name:'Govt docs',cat:'Govt docs / Services'},
+  {emoji:'🍱',name:'Home cook',cat:'Home cook / Tiffin'},
+];
+
+const NEWASA = [19.5559, 74.9908];
+
+// Your real NewasaZone Firebase project (pre-configured)
+const DEFAULT_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyC0KaDA64_D5PYd9AxFHcom0Gki1QfdIc8",
+  authDomain: "newasazone.firebaseapp.com",
+  projectId: "newasazone",
+  storageBucket: "newasazone.firebasestorage.app",
+  messagingSenderId: "67482176953",
+  appId: "1:67482176953:web:66f8939680cafbaa9b3a68",
+  measurementId: "G-TYTJD97MQY"
+};
+
+window.addEventListener('load', () => {
+  loadConfig();
+  STATE.merchants = JSON.parse(JSON.stringify(DEMO_MERCHANTS));
+  STATE.orders = JSON.parse(JSON.stringify(DEMO_ORDERS));
+  STATE.riders = JSON.parse(JSON.stringify(DEMO_RIDERS));
+  STATE.promoCodes = JSON.parse(JSON.stringify(DEMO_PROMOS));
+  autoConnectFirebase();
+  showScreen(STATE.config.setupDone ? 'auth' : 'setup');
+});
+
+function autoConnectFirebase(){
+  try{
+    const cfg = (STATE.config.firebase) ? STATE.config.firebase : DEFAULT_FIREBASE_CONFIG;
+    if(!firebase.apps.length) firebase.initializeApp(cfg);
+    STATE.db = firebase.firestore();
+    STATE.auth = firebase.auth();
+    STATE.config.firebase = cfg;
+    STATE.demoMode = false;
+    saveConfig();
+    console.log('🔥 Firebase connected to project:', cfg.projectId);
+  }catch(e){
+    console.log('Firebase auto-connect failed, using demo mode:', e.message);
+    STATE.demoMode = true;
+  }
+}
+
+function loadConfig(){ try{const s=localStorage.getItem('nz_config'); if(s) STATE.config=JSON.parse(s);}catch(e){} }
+function saveConfig(){ try{localStorage.setItem('nz_config',JSON.stringify(STATE.config));}catch(e){} }
+function showScreen(s){
+  document.getElementById('setup-screen').style.display = s==='setup'?'flex':'none';
+  document.getElementById('auth-screen').style.display = s==='auth'?'block':'none';
+  document.getElementById('main-app').style.display = s==='app'?'block':'none';
+}
+
+// SETUP WIZARD
+let curStep = 0;
+function nextStep(){
+  const steps=document.querySelectorAll('.step'), dots=document.querySelectorAll('.sd');
+  steps[curStep].classList.remove('on'); dots[curStep].classList.remove('on');
+  curStep++;
+  if(curStep<steps.length){steps[curStep].classList.add('on'); dots[curStep].classList.add('on');}
+}
+async function testFirebase(){
+  const key=document.getElementById('s-fbkey').value.trim();
+  const domain=document.getElementById('s-fbdomain').value.trim();
+  const projectId=document.getElementById('s-fbproject').value.trim();
+  if(!key||!domain||!projectId){notify('Please fill all Firebase fields!','err');return;}
+  try{
+    const cfg={apiKey:key,authDomain:domain,projectId:projectId,storageBucket:document.getElementById('s-fbstorage').value.trim(),messagingSenderId:document.getElementById('s-fbmsg').value.trim(),appId:document.getElementById('s-fbappid').value.trim()};
+    if(!firebase.apps.length) firebase.initializeApp(cfg);
+    STATE.db=firebase.firestore(); STATE.auth=firebase.auth();
+    STATE.config.firebase=cfg; STATE.demoMode=false;
+    notify('🔥 Firebase connected successfully!','ok'); saveConfig();
+    setTimeout(nextStep,900);
+  }catch(e){notify('Firebase error: '+e.message,'err');}
+}
+function skipToDemo(){STATE.demoMode=true;notify('Running in demo mode — no real database','info');nextStep();}
+function finishSetup(){
+  STATE.config.setupDone=true;
+  STATE.config.platformName=document.getElementById('s-name').value;
+  STATE.config.city=document.getElementById('s-city').value;
+  STATE.config.contact=document.getElementById('s-contact').value;
+  STATE.config.deliveryRadius=document.getElementById('s-radius').value;
+  STATE.config.deliveryFee=document.getElementById('s-delfee').value;
+  STATE.config.rzpKey=document.getElementById('s-rzp')?.value||'';
+  STATE.config.msg91Key=document.getElementById('s-msg91')?.value||'';
+  STATE.config.waPhone=document.getElementById('s-waphone')?.value||'';
+  saveConfig();
+  notify('🚀 NewasaZone is live!','ok');
+  setTimeout(()=>showScreen('auth'),700);
+}
+function openSetup(){showScreen('setup');}
+
+// AUTH
+let selectedRole='customer', otpTimer;
+function selectRole(r){
+  selectedRole=r;
+  document.querySelectorAll('.rl').forEach(el=>el.classList.remove('sel'));
+  document.getElementById('role-'+r).classList.add('sel');
+}
+function sendOTP(){
+  const phone=document.getElementById('auth-phone').value.trim();
+  if(phone.length<10){notify('Enter valid 10-digit mobile number','err');return;}
+  document.getElementById('otp-phone-display').textContent='+91 '+phone;
+  document.getElementById('auth-phone-step').style.display='none';
+  document.getElementById('auth-otp-step').style.display='block';
+  notify('OTP sent via WhatsApp to +91 '+phone,'ok');
+  startOTPTimer();
+  if(!STATE.demoMode && STATE.auth){
+    try{
+      window.recaptchaVerifier=new firebase.auth.RecaptchaVerifier('auth-otp-step',{size:'invisible'});
+      STATE.auth.signInWithPhoneNumber('+91'+phone,window.recaptchaVerifier).then(r=>{STATE.confirmationResult=r;}).catch(e=>notify('OTP error: '+e.message,'err'));
+    }catch(e){}
+  }
+}
+function startOTPTimer(){
+  let t=30; clearInterval(otpTimer);
+  otpTimer=setInterval(()=>{t--;const el=document.getElementById('otp-timer');if(el)el.textContent=t+'s';if(t<=0)clearInterval(otpTimer);},1000);
+}
+function resendOTP(){notify('OTP resent!','info');startOTPTimer();}
+function otpNext(i){
+  const val=document.getElementById('otp'+i).value;
+  if(val&&i<5)document.getElementById('otp'+(i+1)).focus();
+  if(i===5)verifyOTP();
+}
+function verifyOTP(){
+  const otp=Array.from({length:6},(_,i)=>document.getElementById('otp'+i).value).join('');
+  if(otp.length<6){notify('Enter 6-digit OTP','err');return;}
+  if(STATE.demoMode){loginSuccess(selectedRole,document.getElementById('auth-phone').value);return;}
+  if(STATE.confirmationResult){
+    STATE.confirmationResult.confirm(otp).then(r=>loginSuccess(selectedRole,r.user.phoneNumber)).catch(()=>notify('Invalid OTP. Try again.','err'));
+  }else{
+    notify('OTP session expired. Please request a new OTP.','err');
+  }
+}
+function demoLogin(){loginSuccess(selectedRole,'9876543210');}
+function loginSuccess(role,phone){
+  STATE.currentRole=role;
+  STATE.currentUser={role,phone,name:{customer:'Demo Customer',merchant:'Ganesh Kirana',rider:'Suresh Jadhav',admin:'Admin'}[role]||'User'};
+  showScreen('app'); setupAppForRole(role);
+  notify('Welcome to NewasaZone! 👋','ok');
+}
+function logout(){
+  STATE.currentUser=null; STATE.cart=[];
+  showScreen('auth');
+  document.getElementById('auth-phone-step').style.display='block';
+  document.getElementById('auth-otp-step').style.display='none';
+  document.getElementById('auth-phone').value='';
+}
+
+// APP ROLE SETUP
+function setupAppForRole(role){
+  document.getElementById('nav-user-name').textContent=STATE.currentUser.name;
+  const tabsEl=document.getElementById('main-nav-tabs');
+  const custNav=document.getElementById('cust-bottom-nav');
+  custNav.style.display='none';
+  document.querySelectorAll('.sc').forEach(v=>v.classList.remove('on'));
+  const tabs={
+    customer:[{label:'🏠 Home',view:'cust-home'}],
+    merchant:[{label:'🏪 Dashboard',view:'merchant'}],
+    rider:[{label:'🏍️ Deliveries',view:'rider'}],
+    admin:[{label:'📊 Overview',view:'admin'},{label:'📋 Onboard',view:'onboard'}],
+  };
+  tabsEl.innerHTML=(tabs[role]||[]).map(t=>`<button class="tb" onclick="showViewFromNav('${t.view}',this)">${t.label}</button>`).join('');
+  if(role==='customer'){
+    custNav.style.display='flex'; renderCustomerHome(); showView('cust-home');
+    document.getElementById('cust-name-display').textContent='Welcome, '+STATE.currentUser.name+'!';
+  }else if(role==='merchant'){showView('merchant');renderMerchantDashboard();}
+  else if(role==='rider'){showView('rider');renderRiderDashboard();setTimeout(initRiderMap,300);}
+  else if(role==='admin'){showView('admin');renderAdminDashboard();setTimeout(initAdminMap,300);}
+}
+function showViewFromNav(v,btn){
+  document.querySelectorAll('.tb').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  showView(v);
+}
+function showView(v){
+  document.querySelectorAll('.sc').forEach(el=>el.classList.remove('on'));
+  const el=document.getElementById('view-'+v);
+  if(el)el.classList.add('on');
+}
+
+// CUSTOMER
+function renderCustomerHome(){
+  document.getElementById('cust-cat-scroll').innerHTML=ALL_VERTICALS.slice(0,12).map(v=>`<div class="cpill" onclick="filterByCat('${v.cat}')"><span class="cpii">${v.emoji}</span><div class="cpn">${v.name}</div></div>`).join('');
+  renderStoreGrid(STATE.merchants.filter(m=>m.status==='active'));
+  document.getElementById('open-count').textContent=STATE.merchants.filter(m=>m.open).length+' open';
+}
+function renderStoreGrid(merchants){
+  document.getElementById('cust-store-grid').innerHTML=merchants.map(m=>`
+    <div class="scard" onclick="openStore('${m.id}')">
+      <div class="sthumb">${m.emoji}</div>
+      <div class="sinf"><div class="snm">${m.name}</div><div class="smeta">⭐ ${m.rating||'New'} · ${m.orders} orders · ${m.cat}</div>
+      <div class="seta ${m.open?'':'sclosed'}">${m.open?'20-35 min':'Closed'}</div></div>
+    </div>`).join('') || '<div style="text-align:center;padding:20px;color:var(--t3)">No stores found</div>';
+}
+function filterByCat(cat){
+  const f=STATE.merchants.filter(m=>m.cat===cat&&m.status==='active');
+  document.getElementById('search-results').style.display='none';
+  renderStoreGrid(f.length?f:STATE.merchants.filter(m=>m.status==='active'));
+}
+function liveSearch(q){
+  const res=document.getElementById('search-results');
+  if(!q.trim()){res.style.display='none';renderStoreGrid(STATE.merchants.filter(m=>m.status==='active'));return;}
+  const m=STATE.merchants.filter(s=>s.name.toLowerCase().includes(q.toLowerCase())||s.cat.toLowerCase().includes(q.toLowerCase())||(s.products||[]).some(p=>p.name.toLowerCase().includes(q.toLowerCase())));
+  renderStoreGrid(m);
+}
+function showAllCats(){
+  document.getElementById('cust-cat-scroll').innerHTML=ALL_VERTICALS.map(v=>`<div class="cpill" onclick="filterByCat('${v.cat}')"><span class="cpii">${v.emoji}</span><div class="cpn">${v.name}</div></div>`).join('');
+  notify('Showing all 25 categories','info');
+}
+function openStore(id){
+  const m=STATE.merchants.find(s=>s.id===id); if(!m) return;
+  document.getElementById('store-view-name').textContent=m.emoji+' '+m.name;
+  document.getElementById('store-view-meta').textContent=m.cat+' · ⭐ '+m.rating+' · '+(m.open?'✅ Open':'❌ Closed');
+  document.getElementById('store-product-list').innerHTML=(m.products||[]).map(p=>{
+    const ci=STATE.cart.find(c=>c.id===p.id); const qty=ci?ci.qty:0;
+    return `<div class="pit"><div class="pem">${p.emoji}</div>
+      <div class="pinf"><div class="pnm">${p.name}</div><div class="pdsc">${p.cat}</div><div class="ppr">₹${p.price}</div></div>
+      <div class="qc" id="qc-${p.id}">${qty>0?`<button class="qb" onclick="updateQty('${p.id}','${m.id}',${p.price},'${p.name}','${p.emoji}',-1)">−</button><span class="qn">${qty}</span><button class="qb" onclick="updateQty('${p.id}','${m.id}',${p.price},'${p.name}','${p.emoji}',1)">+</button>`:`<button class="acb" onclick="updateQty('${p.id}','${m.id}',${p.price},'${p.name}','${p.emoji}',1)">Add</button>`}</div>
+    </div>`;
+  }).join('') || '<div style="text-align:center;padding:30px;color:var(--t3)">No products listed yet</div>';
+  showView('cust-store');
+}
+function updateQty(pid,storeId,price,name,emoji,delta){
+  const idx=STATE.cart.findIndex(c=>c.id===pid);
+  if(idx>=0){STATE.cart[idx].qty+=delta;if(STATE.cart[idx].qty<=0)STATE.cart.splice(idx,1);}
+  else if(delta>0){const store=STATE.merchants.find(m=>m.id===storeId);STATE.cart.push({id:pid,storeId,storeName:store?.name,price,name,emoji,qty:1});}
+  updateCartBadge();
+  const ctrl=document.getElementById('qc-'+pid);
+  if(ctrl){const item=STATE.cart.find(c=>c.id===pid);const qty=item?item.qty:0;
+    ctrl.innerHTML=qty>0?`<button class="qb" onclick="updateQty('${pid}','${storeId}',${price},'${name}','${emoji}',-1)">−</button><span class="qn">${qty}</span><button class="qb" onclick="updateQty('${pid}','${storeId}',${price},'${name}','${emoji}',1)">+</button>`:`<button class="acb" onclick="updateQty('${pid}','${storeId}',${price},'${name}','${emoji}',1)">Add</button>`;}
+}
+function updateCartBadge(){
+  const total=STATE.cart.reduce((a,c)=>a+c.qty,0);
+  const badge=document.getElementById('cart-badge');
+  if(badge){badge.style.display=total>0?'flex':'none';badge.textContent=total;}
+}
+function showCustView(v,btn){
+  document.querySelectorAll('.bni').forEach(el=>el.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  if(v==='cart')renderCart();
+  if(v==='orders')renderMyOrders();
+  showView('cust-'+v);
+}
+function renderCart(){
+  const el=document.getElementById('cart-items'), sumEl=document.getElementById('cart-summary'), bar=document.getElementById('checkout-bar');
+  if(!STATE.cart.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--t3)">🛒 Your cart is empty.<br><br><button class="btn btp" onclick="showCustView(\'home\',document.querySelector(\'.bni[onclick*=home]\'))">Browse stores</button></div>';sumEl.innerHTML='';bar.style.display='none';return;}
+  el.innerHTML=STATE.cart.map(c=>`<div class="cit"><span class="cem">${c.emoji}</span><div class="cii"><div class="cin">${c.name}</div><div class="cst">${c.storeName}</div></div>
+    <div class="qc"><button class="qb" onclick="updateQtyCart('${c.id}',-1)">−</button><span class="qn">${c.qty}</span><button class="qb" onclick="updateQtyCart('${c.id}',1)">+</button></div>
+    <div style="font-size:14px;font-weight:800;min-width:55px;text-align:right">₹${c.price*c.qty}</div></div>`).join('');
+  const sub=STATE.cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const fee=sub>=300?0:parseInt(STATE.config.deliveryFee||20);
+  const total=sub+fee;
+  sumEl.innerHTML=`<div class="ctr"><span>Subtotal</span><span>₹${sub}</span></div>
+    <div class="ctr"><span>Delivery fee</span><span>${fee===0?'<span style="color:var(--g)">FREE</span>':'₹'+fee}</span></div>
+    ${fee===0?'':'<div style="font-size:11px;color:var(--g);margin-top:-4px;margin-bottom:4px">Add ₹'+(300-sub)+' more for free delivery</div>'}
+    <div class="ctr gd"><span>Total</span><span>₹${total}</span></div>`;
+  bar.style.display='block';
+  document.getElementById('checkout-total').textContent='₹'+total;
+}
+function updateQtyCart(pid,delta){updateQty(pid,null,null,null,null,delta);renderCart();}
+function initiateCheckout(){
+  if(!STATE.cart.length){notify('Your cart is empty!','err');return;}
+  const sub=STATE.cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const fee=sub>=300?0:parseInt(STATE.config.deliveryFee||20);
+  const total=sub+fee;
+  document.getElementById('payment-summary').innerHTML=STATE.cart.map(c=>`${c.name} ×${c.qty} = ₹${c.price*c.qty}`).join('<br>')+`<br><br><strong>Delivery: ${fee===0?'Free':'₹'+fee} | Total: ₹${total}</strong>`;
+  document.getElementById('pay-amount').textContent='₹'+total;
+  document.getElementById('payment-modal').style.display='flex';
+}
+function applyPromo(){
+  const code=document.getElementById('promo-code-input').value.trim().toUpperCase();
+  const promo=STATE.promoCodes.find(p=>p.code===code&&p.status==='active');
+  if(promo){document.getElementById('promo-applied').style.display='block';notify('✅ Promo applied: '+promo.desc,'ok');}
+  else{notify('Invalid promo code','err');}
+}
+function processPayment(){
+  if(!STATE.cart.length){closeModal('payment-modal');notify('Your cart is empty!','err');return;}
+  const method=document.querySelector('input[name="pay-method"]:checked')?.value;
+  const sub=STATE.cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const fee=sub>=300?0:parseInt(STATE.config.deliveryFee||20);
+  const total=sub+fee;
+  const rzpKey=STATE.config.rzpKey||STATE.rzpKey;
+  if(method!=='cod'&&rzpKey&&rzpKey.startsWith('rzp_')){
+    new Razorpay({key:rzpKey,amount:total*100,currency:'INR',name:'NewasaZone',description:'Order from '+(STATE.cart[0]?.storeName||'store'),
+      handler:function(r){closeModal('payment-modal');createOrder('upi',r.razorpay_payment_id);},
+      prefill:{contact:'+91'+(STATE.currentUser?.phone||'')},theme:{color:'#16a34a'}}).open();
+  }else{closeModal('payment-modal');createOrder(method,'DEMO_'+Date.now());}
+}
+function createOrder(payMethod,payId){
+  const orderId='NZ'+(++STATE.orderIdCounter);
+  const sub=STATE.cart.reduce((a,c)=>a+c.price*c.qty,0);
+  const order={id:orderId,custName:STATE.currentUser?.name||'Customer',custPhone:STATE.currentUser?.phone||'',
+    store:STATE.cart[0]?.storeName||'Store',storeId:STATE.cart[0]?.storeId||'',
+    items:STATE.cart.map(c=>({name:c.name,qty:c.qty,price:c.price})),
+    total:sub+(sub>=300?0:20),status:'new',rider:'—',time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),paid:payMethod,payId};
+  STATE.orders.unshift(order); STATE.cart=[]; updateCartBadge();
+  notify(`✅ Order ${orderId} placed! Track in Orders tab.`,'ok');
+  console.log(`📱 WhatsApp: Order ${order.id} confirmed to ${order.custPhone}`);
+  if(!STATE.demoMode&&STATE.db) STATE.db.collection('orders').doc(orderId).set({...order,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(e=>console.log(e));
+  showCustView('orders',document.querySelector('.bni[onclick*=orders]'));
+  setTimeout(()=>simulateOrderProgress(orderId),3000);
+}
+function simulateOrderProgress(orderId){
+  const stages=['preparing','on_the_way','delivered']; let i=0;
+  const iv=setInterval(()=>{
+    const order=STATE.orders.find(o=>o.id===orderId);
+    if(!order||i>=stages.length){clearInterval(iv);return;}
+    order.status=stages[i++];
+    if(order.status==='on_the_way'){order.rider='Suresh Jadhav';STATE.riders[0].deliveries++;STATE.riders[0].earned+=35;}
+    notify(`Order ${orderId}: ${order.status.replace('_',' ')} 📦`,'info');
+    if(document.getElementById('view-cust-orders').classList.contains('on')) renderMyOrders();
+  },8000);
+}
+function renderMyOrders(){
+  const el=document.getElementById('my-orders-list');
+  const co=STATE.orders.filter(o=>o.custPhone===(STATE.currentUser?.phone||'')||STATE.demoMode);
+  if(!co.length){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--t3)">No orders yet</div>';return;}
+  el.innerHTML=co.map(o=>`<div class="card" style="padding:13px;margin-bottom:9px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+      <div style="font-size:15px;font-weight:800">#${o.id}</div><span class="bdg ${statusBadge(o.status)}">${statusLabel(o.status)}</span>
+    </div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:3px">${o.store}</div>
+    <div style="font-size:12px;color:var(--t3)">${o.items.map(i=>i.name+' ×'+i.qty).join(', ')}</div>
+    <div style="display:flex;justify-content:space-between;margin-top:7px">
+      <span style="font-size:13px;font-weight:700">₹${o.total} · ${o.paid==='cod'?'COD':'Paid'}</span>
+      ${o.status==='on_the_way'?`<button class="btn btp bts" onclick="trackOrder('${o.id}')">Track order →</button>`:''}
+    </div></div>`).join('');
+}
+function trackOrder(id){
+  const order=STATE.orders.find(o=>o.id===id); if(!order) return;
+  document.getElementById('track-order-id').textContent='Order #'+order.id;
+  document.getElementById('track-rider').textContent=order.rider;
+  document.getElementById('track-steps').innerHTML=`<div class="tl"></div><div class="tlf" style="height:60%"></div>`+
+    [{label:'Order placed',time:order.time,done:true},{label:'Merchant confirmed',time:'',done:true},
+     {label:'Rider picked up',time:'',done:order.status==='on_the_way'||order.status==='delivered',cur:order.status==='on_the_way'},
+     {label:'Delivered',time:'',done:order.status==='delivered'}]
+    .map(s=>`<div class="ts ${s.done?'dn':''} ${s.cur?'cur':''}"><div class="tc">${s.done?'✓':s.cur?'🏍️':'○'}</div><div class="ti"><div class="ttl2">${s.label}</div><div class="ttm">${s.time}</div></div></div>`).join('');
+  showView('cust-track'); setTimeout(initDeliveryMap,300);
+}
+
+// MAPS
+function initMap(id,center,zoom){
+  const el=document.getElementById(id); if(!el) return null;
+  if(STATE.maps[id]){STATE.maps[id].remove();delete STATE.maps[id];}
+  const map=L.map(id).setView(center,zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(map);
+  STATE.maps[id]=map; return map;
+}
+function initDeliveryMap(){
+  const map=initMap('dlmap',NEWASA,14); if(!map) return;
+  L.marker(NEWASA).addTo(map).bindPopup('📍 Delivery location');
+  const rp=[NEWASA[0]+0.005,NEWASA[1]+0.007];
+  L.marker(rp,{icon:L.divIcon({html:'🏍️',className:'',iconSize:[28,28]})}).addTo(map).bindPopup('🏍️ Rider');
+  L.polyline([rp,NEWASA],{color:'#16a34a',weight:3,dashArray:'6'}).addTo(map);
+}
+function initRiderMap(){
+  const map=initMap('rlmap',NEWASA,14); if(!map) return;
+  L.marker(NEWASA,{icon:L.divIcon({html:'🏍️',className:'',iconSize:[28,28]})}).addTo(map).bindPopup('You are here');
+  STATE.merchants.slice(0,3).forEach((m,i)=>{
+    const pos=[NEWASA[0]+i*0.003,NEWASA[1]+i*0.004];
+    L.marker(pos,{icon:L.divIcon({html:m.emoji,className:'',iconSize:[24,24]})}).addTo(map).bindPopup(m.name);
+  });
+}
+function initAdminMap(){
+  const map=initMap('almap',NEWASA,13); if(!map) return;
+  STATE.merchants.filter(m=>m.open).forEach(m=>{
+    const pos=[NEWASA[0]+(Math.random()-.5)*0.03,NEWASA[1]+(Math.random()-.5)*0.03];
+    L.marker(pos,{icon:L.divIcon({html:m.emoji,className:'',iconSize:[26,26]})}).addTo(map).bindPopup(`<b>${m.name}</b><br>${m.orders} orders today`);
+  });
+  const rp=[NEWASA[0]+0.005,NEWASA[1]+0.007];
+  L.marker(rp,{icon:L.divIcon({html:'🏍️',className:'',iconSize:[28,28]})}).addTo(map).bindPopup('Rider: Suresh Jadhav — On delivery');
+  L.circle(NEWASA,{color:'#16a34a',fillColor:'#dcfce7',fillOpacity:.15,radius:8000}).addTo(map);
+}
+
+// MERCHANT
+function renderMerchantDashboard(){
+  const m=STATE.merchants[0];
+  document.getElementById('merch-store-name').textContent=m.emoji+' '+m.name;
+  renderMerchStats(); renderMerchOrders(); renderMerchCatalogue(); renderMerchEarnings(); renderMerchAnalytics();
+}
+function m_today_orders(){return STATE.orders.filter(o=>o.storeId==='m1').length}
+function renderMerchStats(){
+  const s=[{icon:'📦',val:m_today_orders(),lbl:'Orders today',c:'var(--g)'},{icon:'💰',val:'₹'+(m_today_orders()*280),lbl:'Revenue today',c:'var(--bl)'},{icon:'⭐',val:'4.8',lbl:'Rating',c:'var(--am)'},{icon:'🔄',val:'96%',lbl:'Acceptance',c:'var(--pu)'}];
+  document.getElementById('merch-stats-row').innerHTML=s.map(x=>`<div class="sb"><div class="si">${x.icon}</div><div class="sv" style="color:${x.c}">${x.val}</div><div class="sl">${x.lbl}</div></div>`).join('');
+}
+function renderMerchOrders(){
+  const orders=STATE.orders.filter(o=>o.storeId==='m1');
+  const incoming=orders.filter(o=>o.status==='new');
+  document.getElementById('incoming-orders-list').innerHTML=incoming.length?incoming.map(o=>`
+    <div class="iord"><div class="iodt"><span>#${o.id} — ₹${o.total}</span><span style="font-size:12px;color:var(--t3)">${o.time}</span></div>
+    <div class="iodi">${o.items.map(i=>i.name+' ×'+i.qty).join(' · ')}<br>Payment: ${o.paid==='cod'?'💵 Cash on delivery':'📱 Paid online'}</div>
+    <div class="oac"><button class="btn btp bts" onclick="acceptOrder('${o.id}')">✅ Accept</button><button class="btn btd bts" onclick="rejectOrder('${o.id}')">✗ Reject</button></div></div>`).join('')
+    :'<div style="text-align:center;padding:20px;color:var(--t3)">No new orders yet. They\'ll appear here instantly!</div>';
+  document.getElementById('merch-all-orders').innerHTML=orders.map(o=>`<tr><td><strong>${o.id}</strong></td><td>${o.custName}</td><td style="max-width:170px">${o.items.map(i=>i.name).join(', ')}</td><td><strong>₹${o.total}</strong></td><td><span class="bdg ${statusBadge(o.status)}">${statusLabel(o.status)}</span></td><td style="color:var(--t3)">${o.time}</td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center;padding:18px;color:var(--t3)">No orders yet</td></tr>';
+}
+function acceptOrder(id){const o=STATE.orders.find(x=>x.id===id);if(o){o.status='preparing';notify('Order '+id+' accepted! Customer notified via WhatsApp.','ok');renderMerchOrders();renderMerchStats();}}
+function rejectOrder(id){const o=STATE.orders.find(x=>x.id===id);if(o){o.status='cancelled';notify('Order '+id+' rejected.','info');renderMerchOrders();}}
+function renderMerchCatalogue(){
+  const m=STATE.merchants[0];
+  document.getElementById('merch-catalogue-grid').innerHTML=(m.products||[]).map(p=>`
+    <div class="card"><div style="height:66px;background:var(--sf2);display:flex;align-items:center;justify-content:center;font-size:32px">${p.emoji}</div>
+    <div style="padding:9px"><div style="font-size:13px;font-weight:700">${p.name}</div><div style="font-size:15px;font-weight:800;color:var(--g);margin-top:2px">₹${p.price}</div><div style="font-size:11px;color:var(--t3);margin-top:1px">Stock: ${p.stock}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:7px"><span style="font-size:11px;color:var(--t3)">In stock</span><input type="checkbox" class="sw" checked></div></div></div>`).join('');
+}
+function renderMerchEarnings(){
+  const s=[{val:'₹4,820',lbl:'This week',c:'var(--g)'},{val:'₹18,340',lbl:'This month',c:'var(--bl)'},{val:'₹1,834',lbl:'Commission (10%)',c:'var(--am)'},{val:'₹16,506',lbl:'Net payout',c:'var(--pu)'}];
+  document.getElementById('merch-earn-stats').innerHTML=s.map(x=>`<div class="sb"><div class="sv" style="color:${x.c}">${x.val}</div><div class="sl">${x.lbl}</div></div>`).join('');
+  renderChart('merch-rev-chart',[1200,1800,1400,2200,1900,2800,3400],['M','T','W','T','F','S','S'],'var(--g)');
+  document.getElementById('payout-info').innerHTML=`<div style="font-size:22px;font-weight:800;color:var(--g);margin-bottom:4px">₹16,506</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:11px">Next payout Monday via Razorpay to <strong>ganesh@upi</strong></div>
+    <div class="prg"><div class="pf" style="width:70%"></div></div><div style="font-size:12px;color:var(--t3);margin-top:3px">70% of monthly target (₹25,000)</div>`;
+}
+function renderMerchAnalytics(){
+  const s=[{val:'87%',lbl:'Order completion',c:'var(--g)'},{val:'24 min',lbl:'Avg prep time',c:'var(--bl)'},{val:'₹285',lbl:'Avg order value',c:'var(--am)'},{val:'43%',lbl:'Repeat customers',c:'var(--pu)'}];
+  document.getElementById('merch-analytics-stats').innerHTML=s.map(x=>`<div class="sb"><div class="sv" style="color:${x.c}">${x.val}</div><div class="sl">${x.lbl}</div></div>`).join('');
+  document.getElementById('top-products').innerHTML=STATE.merchants[0].products.slice(0,5).map((p,i)=>`<div class="drow"><span style="font-size:16px">${p.emoji}</span><div style="flex:1"><div style="font-size:13px;font-weight:700">${p.name}</div><div style="font-size:11px;color:var(--t3)">${12-i*2} orders this week</div></div><strong style="color:var(--g)">₹${(12-i*2)*p.price}</strong></div>`).join('');
+  renderChart('hourly-chart',[2,1,3,5,8,12,10,7,6,9,11,8],['8','9','10','11','12','1p','2p','3p','4p','5p','6p','7p'],'var(--bl)');
+}
+function setMerchTab(t,btn){
+  document.querySelectorAll('[id^="merch-tab-"]').forEach(el=>el.style.display='none');
+  document.getElementById('merch-tab-'+t).style.display='block';
+  document.querySelectorAll('.mn').forEach(el=>el.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+}
+function toggleStoreStatus(){
+  const on=document.getElementById('store-online').checked;
+  STATE.merchants[0].open=on;
+  document.getElementById('merch-store-status').textContent=on?'● Open':'○ Closed';
+  document.getElementById('merch-store-status').style.color=on?'#4ade80':'#f87171';
+  notify('Store marked '+(on?'OPEN':'CLOSED'),'ok');
+}
+function openAddProduct(){document.getElementById('add-product-modal').style.display='flex';}
+function saveProduct(){
+  const name=document.getElementById('mp-name').value;
+  const price=parseInt(document.getElementById('mp-price').value);
+  if(!name||!price){notify('Fill all fields','err');return;}
+  const p={id:'p'+Date.now(),name,price,stock:parseInt(document.getElementById('mp-stock').value)||10,emoji:document.getElementById('mp-emoji').value||'📦',cat:document.getElementById('mp-cat').value,desc:document.getElementById('mp-desc').value};
+  STATE.merchants[0].products.push(p); closeModal('add-product-modal'); renderMerchCatalogue(); notify('Product added!','ok');
+  if(!STATE.demoMode&&STATE.db) STATE.db.collection('products').doc(p.id).set(p).catch(e=>console.log(e));
+}
+function saveMerchSettings(){notify('Settings saved!','ok');}
+
+// RIDER
+function renderRiderDashboard(){
+  const r=STATE.riders[0];
+  document.getElementById('r-deliveries').textContent=r.deliveries;
+  document.getElementById('r-today-earn').textContent='₹'+r.earned;
+  document.getElementById('r-km').textContent=(r.deliveries*1.8).toFixed(1)+' km';
+  renderPendingDeliveries(); renderCompletedDeliveries();
+}
+function renderPendingDeliveries(){
+  const pending=STATE.orders.filter(o=>o.status==='preparing');
+  document.getElementById('rider-pending-list').innerHTML=pending.length?pending.map(o=>`
+    <div class="dc"><div class="dch"><div class="did">#${o.id}</div><div class="dern">+₹35</div></div>
+    <div class="dr"><div class="dri"><div class="dric drip">📦</div><strong>Pickup:</strong> ${o.store}</div><div class="dri"><div class="dric drido">🏠</div><strong>Drop:</strong> ${o.custName} · Newasa</div></div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:9px">Items: ${o.items.map(i=>i.name).join(', ')} · ${o.paid==='cod'?'💵 Collect ₹'+o.total:'✅ Paid'}</div>
+    <div style="display:flex;gap:7px"><button class="btn btp bts" onclick="acceptDelivery('${o.id}')">Accept pickup</button><button class="btn bto bts" onclick="notify('Navigate opened','info')">🗺️ Navigate</button></div></div>`).join('')
+    :'<div style="text-align:center;padding:30px;color:var(--t3)">⏳ Waiting for orders... You\'ll be notified instantly!</div>';
+}
+function acceptDelivery(id){
+  const o=STATE.orders.find(x=>x.id===id);
+  if(o){o.status='on_the_way';o.rider='Suresh Jadhav';STATE.riders[0].deliveries++;STATE.riders[0].earned+=35;
+  notify('Delivery accepted! Navigate to '+o.store,'ok');renderRiderDashboard();
+  setTimeout(()=>{o.status='delivered';renderRiderDashboard();notify('Order '+id+' delivered! +₹35 earned 🎉','ok');},6000);}
+}
+function renderCompletedDeliveries(){
+  const done=STATE.orders.filter(o=>o.status==='delivered');
+  document.getElementById('rider-completed-list').innerHTML=done.length?done.map(o=>`
+    <div class="card" style="padding:11px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center">
+    <div><div style="font-size:13px;font-weight:700">#${o.id} · ${o.store}</div><div style="font-size:11px;color:var(--t3)">${o.custName} · ${o.time}</div></div>
+    <strong style="color:var(--g)">+₹35</strong></div>`).join(''):'<div style="text-align:center;padding:20px;color:var(--t3)">No deliveries yet today</div>';
+}
+function toggleRiderOnline(){
+  const on=document.getElementById('rider-online-toggle').checked;
+  document.getElementById('rider-online-label').textContent=on?'● Online':'○ Offline';
+  document.getElementById('rider-online-label').style.color=on?'#4ade80':'#f87171';
+  STATE.riders[0].online=on;
+  notify(on?'You are now online — receiving orders':'You are offline','info');
+}
+
+// ADMIN
+function renderAdminDashboard(){
+  renderAdminKPIs(); renderAdminChart(); renderAdminOrders(); renderAdminMerchants(); renderAdminRiders();
+  renderFinance(); renderMarketing(); renderPromoCodes(); renderIntegrationsStatus(); renderCommissionSettings(); initWABot();
+}
+function renderAdminKPIs(){
+  const k=[{icon:'📦',val:STATE.orders.length,lbl:'Total orders',c:'var(--g)'},{icon:'💰',val:'₹'+STATE.orders.reduce((a,o)=>a+o.total,0).toLocaleString('en-IN'),lbl:'Total GMV',c:'var(--bl)'},{icon:'🏪',val:STATE.merchants.filter(m=>m.status==='active').length,lbl:'Active merchants',c:'var(--am)'},{icon:'🏍️',val:STATE.riders.filter(r=>r.online).length,lbl:'Riders online',c:'var(--pu)'},{icon:'👥',val:'127',lbl:'Total customers',c:'var(--g)'}];
+  document.getElementById('admin-kpi-row').innerHTML=k.map(x=>`<div class="sb"><div class="si">${x.icon}</div><div class="sv" style="color:${x.c}">${x.val}</div><div class="sl">${x.lbl}</div></div>`).join('');
+}
+function renderAdminChart(){
+  renderChart('admin-gmv-chart',[8200,11400,9800,14200,12600,18400,21800],['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],'var(--g)');
+  const cats=[{n:'Grocery',p:35,c:'var(--g)'},{n:'Food',p:25,c:'var(--bl)'},{n:'Medicine',p:15,c:'var(--pu)'},{n:'Vegetables',p:12,c:'var(--am)'},{n:'Services',p:8,c:'var(--rd)'},{n:'Others',p:5,c:'var(--t3)'}];
+  document.getElementById('admin-cat-breakdown').innerHTML=cats.map(c=>`<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>${c.n}</span><strong>${c.p}%</strong></div><div class="prg"><div class="pf" style="width:${c.p*2}%;background:${c.c}"></div></div></div>`).join('');
+}
+function renderAdminOrders(filter='all'){
+  const orders=filter==='all'?STATE.orders:STATE.orders.filter(o=>o.status===filter);
+  document.getElementById('admin-orders-body').innerHTML=orders.map(o=>`<tr><td><strong>#${o.id}</strong></td><td>${o.custName}</td><td>${o.store}</td><td style="max-width:140px;font-size:12px">${o.items.map(i=>i.name).join(', ')}</td><td><strong>₹${o.total}</strong></td><td><span class="bdg ${statusBadge(o.status)}">${statusLabel(o.status)}</span></td><td>${o.rider}</td><td style="color:var(--t3)">${o.time}</td></tr>`).join('')||'<tr><td colspan="8" style="text-align:center;padding:18px;color:var(--t3)">No orders</td></tr>';
+}
+function filterOrders(f,btn){
+  renderAdminOrders(f);
+  document.querySelectorAll('#order-filters .btn').forEach(b=>b.classList.remove('btp','active'));
+  if(btn)btn.classList.add('btp');
+}
+function renderAdminMerchants(){
+  document.getElementById('admin-merchants-body').innerHTML=STATE.merchants.map(m=>`<tr><td><strong>${m.emoji} ${m.name}</strong></td><td>${m.cat}</td><td>${m.owner}</td><td>${m.phone}</td><td>${m.orders}</td><td>${m.rating||'—'}</td><td><span class="bdg ${m.status==='active'?'bg':'ba'}">${m.status}</span></td>
+    <td>${m.status==='pending'?`<button class="btn btp bts" onclick="approveMerchant('${m.id}')">Approve</button> <button class="btn btd bts" onclick="notify('Rejected','info')">Reject</button>`:'<span style="color:var(--t3);font-size:12px">Active</span>'}</td></tr>`).join('');
+}
+function approveMerchant(id){const m=STATE.merchants.find(x=>x.id===id);if(m){m.status='active';m.open=true;notify(m.name+' approved & live!','ok');renderAdminMerchants();renderAdminKPIs();}}
+function renderAdminRiders(){
+  const s=[{val:STATE.riders.length,lbl:'Total riders'},{val:STATE.riders.filter(r=>r.online).length,lbl:'Online now'},{val:STATE.orders.filter(o=>o.status==='delivered').length,lbl:'Deliveries today'}];
+  document.getElementById('rider-stats-row').innerHTML=s.map(x=>`<div class="sb"><div class="sv" style="color:var(--g)">${x.val}</div><div class="sl">${x.lbl}</div></div>`).join('');
+  document.getElementById('admin-riders-body').innerHTML=STATE.riders.map(r=>`<tr><td><strong>🏍️ ${r.name}</strong></td><td>${r.phone}</td><td><span class="bdg ${r.online?'bg':'bgr'}">${r.online?'Online':'Offline'}</span></td><td>${r.deliveries}</td><td style="color:var(--g);font-weight:700">₹${r.earned}</td><td>⭐${r.rating}</td><td><button class="btn bto bts" onclick="notify('Calling '+'${r.name}','info')">📞 Call</button></td></tr>`).join('');
+}
+function renderFinance(){
+  const gmv=STATE.orders.reduce((a,o)=>a+o.total,0);
+  const platform=Math.round(gmv*.12);
+  const k=[{val:'₹'+gmv.toLocaleString('en-IN'),lbl:'Total GMV',c:'var(--g)'},{val:'₹'+platform.toLocaleString('en-IN'),lbl:'Platform revenue (12%)',c:'var(--bl)'},{val:'₹'+(platform*.6).toFixed(0),lbl:'Net profit (after costs)',c:'var(--am)'},{val:STATE.orders.filter(o=>o.paid!=='cod').length,lbl:'Online payments',c:'var(--pu)'}];
+  document.getElementById('finance-kpi').innerHTML=k.map(x=>`<div class="sb"><div class="sv" style="color:${x.c}">${x.val}</div><div class="sl">${x.lbl}</div></div>`).join('');
+  document.getElementById('rev-breakdown').innerHTML=`<div class="drow"><div style="flex:1">Commission (10–18%)</div><strong style="color:var(--g)">₹${Math.round(gmv*.11).toLocaleString('en-IN')}</strong></div>
+    <div class="drow"><div style="flex:1">Delivery fees</div><strong style="color:var(--bl)">₹${STATE.orders.length*18}</strong></div>
+    <div class="drow"><div style="flex:1">Merchant subscriptions</div><strong style="color:var(--am)">₹${STATE.merchants.filter(m=>m.status==='active').length*299}</strong></div>
+    <div class="drow"><div style="flex:1">Promoted listings</div><strong style="color:var(--pu)">₹800</strong></div>`;
+  document.getElementById('merchant-payouts-list').innerHTML=STATE.merchants.filter(m=>m.status==='active').map(m=>`<div class="drow"><div><div style="font-size:13px;font-weight:700">${m.name}</div><div style="font-size:11px;color:var(--t3)">${m.upi||'UPI not set'}</div></div><strong style="color:var(--g);margin-left:auto">₹${(m.orders*250*.9).toFixed(0)}</strong></div>`).join('');
+}
+function processPayouts(){notify('₹'+STATE.merchants.filter(m=>m.status==='active').reduce((a,m)=>a+(m.orders*250*.9),0).toFixed(0)+' processed to all merchants via Razorpay!','ok');}
+function renderMarketing(){
+  const t=[{icon:'💬',bg:'#dcfce7',title:'WhatsApp broadcast ready',desc:'Send launch message to all customer contacts. 0 cost per message with MSG91 free tier (100 messages/day).'},
+    {icon:'📍',bg:'#dbeafe',title:'Newasa bus stand activation',desc:'Saturday 8–11 AM. Hand flyers to 100+ people. Show live app demo. Free first order = instant sign-ups.'},
+    {icon:'🏪',bg:'#fef3c7',title:'Kirana partner activation',desc:'Visit each kirana in Newasa town. Show merchant app. First 3 months free on platform.'},
+    {icon:'🌾',bg:'#ede9fe',title:'Village sarpanch outreach',desc:'120+ villages in Newasa taluka. Share via gram panchayat WhatsApp groups. Zero cost.'}];
+  document.getElementById('marketing-tactics').innerHTML=t.map(x=>`<div class="card" style="padding:14px;margin-bottom:9px;display:flex;align-items:flex-start;gap:13px">
+    <div style="width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;background:${x.bg}">${x.icon}</div>
+    <div style="flex:1"><div style="font-size:14px;font-weight:700;margin-bottom:2px">${x.title}</div><div style="font-size:12px;color:var(--t2);line-height:1.5">${x.desc}</div></div>
+    <button class="btn btp bts" onclick="notify('${x.title} activated!','ok')">Activate</button></div>`).join('');
+}
+function renderPromoCodes(){
+  document.getElementById('promo-codes-body').innerHTML=STATE.promoCodes.map(p=>`<tr><td><strong>${p.code}</strong></td><td>${p.type==='Percentage'?p.val+'%':'₹'+p.val}</td><td>${p.uses}/${p.maxUses}</td><td><span class="bdg ${p.status==='active'?'bg':'bgr'}">${p.status}</span></td></tr>`).join('');
+}
+function createPromo(){
+  const code=document.getElementById('pm-code').value.trim().toUpperCase();
+  const val=parseInt(document.getElementById('pm-val').value);
+  if(!code||!val){notify('Fill all fields','err');return;}
+  STATE.promoCodes.push({code,type:document.getElementById('pm-type').value.includes('Percent')?'Percentage':'Flat',val,minOrder:parseInt(document.getElementById('pm-min').value)||0,uses:0,maxUses:parseInt(document.getElementById('pm-uses').value)||100,status:'active'});
+  closeModal('promo-modal');renderPromoCodes();notify('Promo code '+code+' created!','ok');
+}
+function renderIntegrationsStatus(){
+  const i=[{name:'Firebase (Database)',status:!STATE.demoMode,icon:'🔥'},{name:'Razorpay (Payments)',status:!!STATE.config.rzpKey,icon:'💳'},{name:'MSG91 (WhatsApp/SMS)',status:!!STATE.config.msg91Key,icon:'💬'},{name:'Leaflet Maps (Free)',status:true,icon:'🗺️'},{name:'ONDC Network',status:false,icon:'🔗'}];
+  document.getElementById('integrations-status').innerHTML=i.map(x=>`<div class="srow"><div class="srinf"><div class="srl">${x.icon} ${x.name}</div></div><span class="bdg ${x.status?'bg':'ba'}">${x.status?'Connected':'Not set'}</span></div>`).join('');
+}
+function renderCommissionSettings(){
+  const c=[{cat:'Kirana / Grocery',rate:10},{cat:'Restaurant / Hotel',rate:15},{cat:'Medical / Pharmacy',rate:8},{cat:'Home services',rate:18},{cat:'Electronics / Furniture',rate:12},{cat:'Vegetables / Fruits',rate:8}];
+  document.getElementById('commission-settings').innerHTML=c.map(x=>`<div class="srow"><span style="font-size:13px">${x.cat}</span><div style="display:flex;align-items:center;gap:7px"><input class="inp" type="number" value="${x.rate}" style="width:58px;text-align:center;padding:5px"><span style="font-size:13px;color:var(--t3)">%</span></div></div>`).join('')+'<button class="btn btp" style="width:100%;margin-top:11px" onclick="notify(&quot;Commission rates saved!&quot;,&quot;ok&quot;)">Save rates</button>';
+}
+function setAdminTab(t,btn){
+  document.querySelectorAll('[id^="admin-tab-"]').forEach(el=>el.style.display='none');
+  document.getElementById('admin-tab-'+t).style.display='block';
+  document.querySelectorAll('.an').forEach(el=>el.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  if(t==='overview') setTimeout(initAdminMap,300);
+}
+
+// WHATSAPP BOT SIMULATOR
+const WA_FLOWS={
+  greeting:{bot:['नमस्कार! 🙏 Welcome to NewasaZone!\\n\\nReply with:\\n1️⃣ Kirana\\n2️⃣ Food\\n3️⃣ Medicine\\n4️⃣ Vegetables\\n5️⃣ Home Services\\n\\nOr type *HELP* for more'],next:'menu'},
+  menu:{bot:['Great choice! 👍\\n\\nShowing nearby stores...\\n\\n🛒 Ganesh Kirana · 0.3km · ⭐4.8\\n💊 Ramesh Medical · 0.5km · ⭐4.9\\n🥬 Shivaji Sabzi · 0.7km · ⭐4.7\\n\\nReply with store number or name to order'],next:'store_selected'},
+  store_selected:{bot:['You selected Ganesh Kirana 🛒\\n\\nPopular items:\\n1. Aashirvaad Atta 5kg — ₹285\\n2. Fortune Oil 1L — ₹135\\n3. Tata Salt 1kg — ₹22\\n4. India Gate Rice 5kg — ₹340\\n\\nReply with item numbers (e.g. *1,2,3*)'],next:'items_selected'},
+  items_selected:{bot:['Your cart 🛒\\n\\n• Aashirvaad Atta 5kg ×1 = ₹285\\n• Fortune Oil 1L ×1 = ₹135\\n\\nSubtotal: ₹420\\nDelivery: FREE (above ₹300)\\n*Total: ₹420*\\n\\nReply:\\n1. Confirm order\\n2. Add more\\n3. Cancel'],next:'confirm'},
+  confirm:{bot:['✅ Order confirmed!\\n\\nOrder #NZ1042\\nDelivery to your location\\nETA: 25-35 minutes 🏍️\\n\\nYou\'ll get a WhatsApp update when the rider picks up.\\n\\nPayment: Cash on delivery ₹420\\n\\nTrack: newasazone.com/track/NZ1042'],next:'greeting'},
+};
+let waStep='greeting';
+function initWABot(){
+  const chat=document.getElementById('wa-chat-area');
+  if(!chat||chat.children.length>0) return;
+  addWAMsg(WA_FLOWS.greeting.bot[0],'bot'); waStep='menu';
+}
+function waSend(){
+  const inp=document.getElementById('wa-user-input'); const msg=inp.value.trim();
+  if(!msg) return;
+  addWAMsg(msg,'user'); inp.value='';
+  setTimeout(()=>{const flow=WA_FLOWS[waStep];if(flow){addWAMsg(flow.bot[0],'bot');waStep=flow.next||'greeting';}else{addWAMsg('नमस्कार! Type *HI* to start ordering 🙏','bot');waStep='menu';}},600);
+}
+function addWAMsg(text,from){
+  const chat=document.getElementById('wa-chat-area'); if(!chat) return;
+  const time=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  const div=document.createElement('div');
+  div.className='wam '+(from==='bot'?'wain':'waout');
+  div.innerHTML=text.replace(/\\n/g,'<br>')+'<div class="watm">'+time+(from==='bot'?' ✓✓':'')+'</div>';
+  chat.appendChild(div); chat.scrollTop=chat.scrollHeight;
+}
+function saveWASettings(){notify('WhatsApp bot settings saved!','ok');}
+
+// ONBOARDING
+function openMerchantOnboard(){showView('onboard');}
+function openRiderOnboard(){showView('onboard');}
+function submitMerchantOnboard(){
+  const owner=document.getElementById('ob-owner').value, store=document.getElementById('ob-store').value, mobile=document.getElementById('ob-mobile').value, cat=document.getElementById('ob-cat').value;
+  if(!owner||!store||!mobile||!cat){notify('Fill all required fields','err');return;}
+  const nm={id:'m'+Date.now(),name:store,cat,owner,phone:mobile,orders:0,rating:0,status:'pending',open:false,emoji:getCatEmoji(cat),upi:document.getElementById('ob-upi').value,products:[]};
+  STATE.merchants.push(nm);
+  if(!STATE.demoMode&&STATE.db) STATE.db.collection('merchants').doc(nm.id).set(nm).catch(e=>console.log(e));
+  notify(`✅ ${store} registered! WhatsApp welcome sent to ${mobile}`,'ok');
+  showView('admin');setAdminTab('merchants',document.querySelector('.an[onclick*=merchants]'));renderAdminMerchants();
+}
+function submitRiderOnboard(){
+  const name=document.getElementById('r-name').value, mobile=document.getElementById('r-mobile').value;
+  if(!name||!mobile){notify('Fill all fields','err');return;}
+  STATE.riders.push({id:'r'+Date.now(),name,phone:mobile,vehicle:document.getElementById('r-vehicle').value,upi:document.getElementById('r-upi').value,status:'active',deliveries:0,earned:0,rating:5.0,online:false});
+  notify(`✅ ${name} added as rider! App login sent via WhatsApp`,'ok'); renderAdminRiders();
+}
+function sendBroadcast(){
+  const msg=document.getElementById('broadcast-msg').value;
+  if(!msg){notify('Enter a message','err');return;}
+  notify('📢 Broadcast sent via WhatsApp to all customers!','ok');
+  document.getElementById('broadcast-msg').value='';
+}
+
+// HELPERS
+function renderChart(id,data,labels,color){
+  const el=document.getElementById(id); if(!el) return;
+  const max=Math.max(...data);
+  el.innerHTML=data.map((v,i)=>`<div class="cc"><div class="cb2" style="height:${Math.round((v/max)*100)}px;background:${color}" title="${labels[i]}: ${v}"></div><div class="cl">${labels[i]}</div></div>`).join('');
+}
+function statusBadge(s){return{new:'bb',preparing:'ba',on_the_way:'bp',delivered:'bg',cancelled:'br2'}[s]||'bgr';}
+function statusLabel(s){return{new:'New',preparing:'Preparing',on_the_way:'On the way',delivered:'Delivered',cancelled:'Cancelled'}[s]||s;}
+function getCatEmoji(cat){const map={'Kirana / General store':'🛒','Restaurant / Hotel':'🍛','Cafe / Tea stall':'☕','Medical / Pharmacy':'💊','Vegetables / Fruits':'🥬','Electronics store':'📺','Furniture store':'🪑','Stationery / Books':'📚','Plumber':'🔧','Electrician':'⚡','Carpenter':'🪚','Mechanic':'🔩','House cleaning':'🧹','Salon / Barber':'💈','Printing / DTP':'🖨️','Agri inputs':'🌾','Courier':'📦','Doctor / Clinic':'🏥','Home cook / Tiffin':'🍱','Tuition / Coaching':'📝','Govt docs / Services':'📄'};return map[cat]||'🏪';}
+function closeModal(id){document.getElementById(id).style.display='none';}
+function openPromoModal(){document.getElementById('promo-modal').style.display='flex';}
+function notify(msg,type){
+  const el=document.getElementById('notif-toast'); el.textContent=msg;
+  el.className='ntf '+(type==='ok'?'ntf-ok':type==='err'?'ntf-err':'ntf-info');
+  el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),3500);
+}
+function showUserMenu(){notify('Signed in as '+STATE.currentUser?.name+' ('+STATE.currentUser?.role+')','info');}
+
+// Live order simulation for admin
+setInterval(()=>{
+  if(STATE.currentRole==='admin'&&document.getElementById('admin-kpi-row')&&document.getElementById('view-admin').classList.contains('on')){
+    if(Math.random()>0.95){
+      const cust=['Priya Deshpande','Ravi Kulkarni','Meena Jagtap','Anil Pawar','Sunita More'];
+      const open=STATE.merchants.filter(m=>m.open&&m.products&&m.products.length);
+      if(open.length){
+        const store=open[Math.floor(Math.random()*open.length)];
+        const prod=store.products[0];
+        const o={id:'NZ'+(++STATE.orderIdCounter),custName:cust[Math.floor(Math.random()*cust.length)],custPhone:'98'+Math.floor(Math.random()*100000000),store:store.name,storeId:store.id,items:[{name:prod.name,qty:1,price:prod.price}],total:prod.price+20,status:'new',rider:'—',time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),paid:Math.random()>.5?'upi':'cod'};
+        STATE.orders.unshift(o); store.orders++;
+        notify(`🔔 New order #${o.id} from ${o.custName}!`,'ok');
+        renderAdminKPIs(); renderAdminOrders(); renderMerchOrders();
+      }
+    }
+  }
+},15000);
+</script>
+</body>
+</html>

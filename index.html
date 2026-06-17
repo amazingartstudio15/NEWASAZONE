@@ -401,7 +401,7 @@ body{font-family:'Baloo 2',sans-serif;background:var(--bg);color:var(--tx);min-h
   </div>
 
   <!-- CUSTOMER: STORE -->
-  <div id="view-cust-store" class="sc cv" style="display:none">
+  <div id="view-cust-store" class="sc cv">
     <div style="padding:13px 14px;background:var(--sf);border-bottom:1px solid var(--br);display:flex;align-items:center;gap:9px">
       <button class="btn bto bts" onclick="showView('cust-home')">← Back</button>
       <div><div id="store-view-name" style="font-size:15px;font-weight:800"></div><div id="store-view-meta" style="font-size:12px;color:var(--t3)"></div></div>
@@ -410,7 +410,7 @@ body{font-family:'Baloo 2',sans-serif;background:var(--bg);color:var(--tx);min-h
   </div>
 
   <!-- CUSTOMER: CART -->
-  <div id="view-cust-cart" class="sc cv" style="display:none">
+  <div id="view-cust-cart" class="sc cv">
     <div class="pg">
       <div class="ptitle">🛒 Your cart</div>
       <div id="cart-items" style="margin-top:14px"></div>
@@ -422,12 +422,12 @@ body{font-family:'Baloo 2',sans-serif;background:var(--bg);color:var(--tx);min-h
   </div>
 
   <!-- CUSTOMER: ORDERS -->
-  <div id="view-cust-orders" class="sc cv" style="display:none">
+  <div id="view-cust-orders" class="sc cv">
     <div class="pg"><div class="ptitle">📦 My orders</div><div id="my-orders-list" style="margin-top:14px"></div></div>
   </div>
 
   <!-- CUSTOMER: TRACK -->
-  <div id="view-cust-track" class="sc cv" style="display:none">
+  <div id="view-cust-track" class="sc cv">
     <div class="pg">
       <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">
         <button class="btn bto bts" onclick="showView('cust-orders')">← Back</button>
@@ -446,7 +446,7 @@ body{font-family:'Baloo 2',sans-serif;background:var(--bg);color:var(--tx);min-h
   </div>
 
   <!-- CUSTOMER: PROFILE -->
-  <div id="view-cust-profile" class="sc cv" style="display:none">
+  <div id="view-cust-profile" class="sc cv">
     <div class="pg">
       <div class="ptitle">👤 My profile</div>
       <div class="card" style="margin-top:14px">
@@ -474,7 +474,7 @@ body{font-family:'Baloo 2',sans-serif;background:var(--bg);color:var(--tx);min-h
     <div class="bni" onclick="showCustView('profile',this)"><span class="bic">👤</span><div class="bil">Profile</div></div>
   </div>
   <!-- MERCHANT -->
-  <div id="view-merchant" class="sc" style="display:none">
+  <div id="view-merchant" class="sc">
     <div class="mly">
       <div class="msb">
         <div class="mslg"><div class="msln" id="merch-store-name">🏪 My Store</div><div class="mslst" id="merch-store-status">● Open</div></div>
@@ -557,7 +557,7 @@ body{font-family:'Baloo 2',sans-serif;background:var(--bg);color:var(--tx);min-h
     </div>
   </div>
   <!-- RIDER -->
-  <div id="view-rider" class="sc" style="display:none">
+  <div id="view-rider" class="sc">
     <div class="rly">
       <div class="rsb">
         <div class="rpr"><div class="rav">🏍️</div><div class="rnm" id="rider-name-display">Suresh Jadhav</div><div class="rrt">⭐ 4.9 · 127 deliveries</div></div>
@@ -587,7 +587,7 @@ body{font-family:'Baloo 2',sans-serif;background:var(--bg);color:var(--tx);min-h
   </div>
 
   <!-- ADMIN -->
-  <div id="view-admin" class="sc" style="display:none">
+  <div id="view-admin" class="sc">
     <div class="aly">
       <div class="asb">
         <div class="aslg"><div class="asln">⚙️ Admin Panel</div><div class="aslst">NewasaZone · Control center</div></div>
@@ -720,7 +720,7 @@ body{font-family:'Baloo 2',sans-serif;background:var(--bg);color:var(--tx);min-h
   </div>
 
   <!-- ONBOARD -->
-  <div id="view-onboard" class="sc" style="display:none">
+  <div id="view-onboard" class="sc">
     <div class="pg" style="max-width:640px;margin:0 auto">
       <div style="display:flex;align-items:center;gap:11px;margin-bottom:18px">
         <button class="btn bto bts" onclick="showView('admin');setAdminTab('merchants',document.querySelector('.an[onclick*=merchants]'))">← Back</button>
@@ -960,15 +960,40 @@ function sendOTP(){
   const phone=document.getElementById('auth-phone').value.trim();
   if(phone.length<10){notify('Enter valid 10-digit mobile number','err');return;}
   document.getElementById('otp-phone-display').textContent='+91 '+phone;
-  document.getElementById('auth-phone-step').style.display='none';
-  document.getElementById('auth-otp-step').style.display='block';
-  notify('OTP sent via WhatsApp to +91 '+phone,'ok');
-  startOTPTimer();
-  if(!STATE.demoMode && STATE.auth){
-    try{
-      window.recaptchaVerifier=new firebase.auth.RecaptchaVerifier('auth-otp-step',{size:'invisible'});
-      STATE.auth.signInWithPhoneNumber('+91'+phone,window.recaptchaVerifier).then(r=>{STATE.confirmationResult=r;}).catch(e=>notify('OTP error: '+e.message,'err'));
-    }catch(e){}
+
+  if(STATE.demoMode || !STATE.auth){
+    document.getElementById('auth-phone-step').style.display='none';
+    document.getElementById('auth-otp-step').style.display='block';
+    notify('Demo mode: enter any 6 digits to continue','info');
+    startOTPTimer();
+    return;
+  }
+
+  notify('Sending OTP...','info');
+  try{
+    if(!window.recaptchaVerifier){
+      window.recaptchaVerifier=new firebase.auth.RecaptchaVerifier('auth-phone-step',{size:'invisible'});
+    }
+    STATE.auth.signInWithPhoneNumber('+91'+phone,window.recaptchaVerifier).then(r=>{
+      STATE.confirmationResult=r;
+      document.getElementById('auth-phone-step').style.display='none';
+      document.getElementById('auth-otp-step').style.display='block';
+      notify('✅ OTP sent to +91 '+phone,'ok');
+      startOTPTimer();
+    }).catch(e=>{
+      console.error('Firebase phone auth error:', e);
+      if(e.code==='auth/unauthorized-domain'){
+        notify('Setup needed: add this domain to Firebase → Authentication → Settings → Authorized domains','err');
+      }else if(e.code==='auth/billing-not-enabled' || e.code==='auth/quota-exceeded'){
+        notify('Phone auth needs Firebase Blaze plan enabled for real SMS. Use demo mode for now.','err');
+      }else{
+        notify('Could not send OTP: '+e.message,'err');
+      }
+      if(window.recaptchaVerifier){try{window.recaptchaVerifier.clear();}catch(_){} window.recaptchaVerifier=null;}
+    });
+  }catch(e){
+    console.error('reCAPTCHA setup error:', e);
+    notify('OTP setup error: '+e.message,'err');
   }
 }
 function startOTPTimer(){
